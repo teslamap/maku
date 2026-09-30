@@ -1102,6 +1102,27 @@ textarea.form-control{min-height:110px;}
   }
   .sidebar.open ~ .main .mobile-menu{display:flex!important;position:fixed!important;left:14px!important;top:11px!important;z-index:4000!important;}
 }
+
+
+@media (max-width:800px){
+  .sidebar-close-menu{
+    display:flex!important;
+    position:absolute!important;
+    top:11px!important;
+    right:12px!important;
+    width:42px!important;
+    height:42px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:0!important;
+    border-radius:11px!important;
+    background:rgba(255,255,255,.12)!important;
+    color:#fff!important;
+    font-size:22px!important;
+    z-index:5000!important;
+  }
+}
+@media (min-width:801px){.sidebar-close-menu{display:none!important;}}
 </style>
 </head>
 
@@ -1150,6 +1171,10 @@ textarea.form-control{min-height:110px;}
     <!-- SIDEBAR -->
 
     <aside class="sidebar" id="sidebar">
+
+      <button class="sidebar-close-menu" id="sidebarCloseMenu" aria-label="მენიუს დაკეცვა">
+        ☰
+      </button>
 
       <div class="brand">
         <div class="brand-icon">✨</div>
@@ -4782,6 +4807,14 @@ window.addEventListener(
   }
 );
 
+
+
+const sidebarCloseMenu = document.getElementById("sidebarCloseMenu");
+if (sidebarCloseMenu) {
+  sidebarCloseMenu.addEventListener("click", () => {
+    document.getElementById("sidebar").classList.remove("open");
+  });
+}
 </script>
 
 </body>
