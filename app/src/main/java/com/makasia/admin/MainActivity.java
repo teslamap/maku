@@ -17,7 +17,11 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
-        webView.loadUrl("file:///android_asset/" + (getPackageName().equals("com.makasia.store") ? "mobile-index.html" : "mobile-admin.html"));
+        String pageUrl = getPackageName().equals("com.makasia.store")
+                ? "https://teslamap.github.io/maku/mobile-index.html"
+                : "https://teslamap.github.io/maku/mobile-admin.html";
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.loadUrl(pageUrl);
         setContentView(webView);
     }
 }
