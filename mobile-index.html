@@ -3509,6 +3509,12 @@ const PROMOS = {
 let products = [];
 let reviews = [];
 
+// Reset stale cart data once for the mobile store release.
+const CART_RESET_VERSION = "2026-09-30-cart-reset-1";
+if(localStorage.getItem("makasia_cart_reset_version") !== CART_RESET_VERSION){
+  localStorage.removeItem("makasia_cart");
+  localStorage.setItem("makasia_cart_reset_version", CART_RESET_VERSION);
+}
 let cart = loadJSON("makasia_cart", []);
 let wishlist = loadJSON("makasia_wishlist", []);
 
