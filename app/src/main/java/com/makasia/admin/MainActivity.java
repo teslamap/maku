@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
-        webView.loadUrl("file:///android_asset/mobile-admin.html");
+        webView.loadUrl("file:///android_asset/" + (BuildConfig.FLAVOR.equals("store") ? "mobile-index.html" : "mobile-admin.html"));
         setContentView(webView);
     }
 }
