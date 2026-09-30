@@ -1,9 +1,9 @@
-name: Build Makasia Admin APK
+name: Build Makasia APK
 
 on:
   push:
     paths:
-      - 'mobile-admin.html'
+      - 'mobile-index.html'
       - 'app/**'
       - '*.gradle'
       - 'settings.gradle'
@@ -27,11 +27,11 @@ jobs:
         with:
           gradle-version: '8.10'
       - name: Prepare HTML asset
-        run: mkdir -p app/src/main/assets && cp mobile-admin.html app/src/main/assets/mobile-admin.html
+        run: mkdir -p app/src/main/assets && cp mobile-index.html app/src/main/assets/mobile-index.html
       - name: Build APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Makasia-Admin
+          name: Makasia
           path: app/build/outputs/apk/debug/app-debug.apk
