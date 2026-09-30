@@ -1,5 +1,28 @@
 plugins { id 'com.android.application' }
 
-android { namespace 'com.makasia.admin'; compileSdk 35
-    defaultConfig { applicationId 'com.makasia.admin'; minSdk 23; targetSdk 35; versionCode 1; versionName '1.0' }
+android {
+    namespace 'com.makasia.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.makasia.app'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    flavorDimensions 'app'
+    productFlavors {
+        admin {
+            dimension 'app'
+            applicationId 'com.makasia.admin'
+            versionName '1.0-admin'
+        }
+        store {
+            dimension 'app'
+            applicationId 'com.makasia.store'
+            versionName '1.0'
+        }
+    }
 }
