@@ -1,0 +1,6287 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f8a9c4">
+<meta name="description" content="Makasia — თანამედროვე ონლაინ მაღაზია">
+
+<title>MAKASIA — Online Store</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<style>
+/* =========================================================
+   MAKASIA
+   PREMIUM PINK E-COMMERCE
+========================================================= */
+
+:root{
+  --pink:#f5a8c4;
+  --pink-2:#ffd6e4;
+  --pink-3:#ffeaf1;
+  --pink-dark:#e879a1;
+  --rose:#c95880;
+
+  --bg:#fff8fb;
+  --bg2:#ffffff;
+  --surface:rgba(255,255,255,.78);
+  --surface-solid:#ffffff;
+
+  --text:#30242a;
+  --muted:#8b737d;
+  --border:rgba(218,137,165,.20);
+
+  --success:#63b88a;
+  --danger:#e76c7d;
+  --warning:#e7a04e;
+
+  --shadow:0 18px 50px rgba(205,108,143,.13);
+  --shadow-sm:0 8px 25px rgba(205,108,143,.10);
+
+  --radius:24px;
+  --radius-sm:16px;
+
+  --header-h:76px;
+}
+
+html.dark{
+  --bg:#160f13;
+  --bg2:#1e151a;
+  --surface:rgba(31,22,27,.82);
+  --surface-solid:#21171c;
+
+  --text:#fff4f8;
+  --muted:#bda5ae;
+  --border:rgba(255,180,207,.12);
+
+  --pink:#f4a3c1;
+  --pink-2:#6e3b4e;
+  --pink-3:#35202a;
+  --pink-dark:#ff9fc1;
+
+  --shadow:0 18px 60px rgba(0,0,0,.28);
+  --shadow-sm:0 8px 25px rgba(0,0,0,.22);
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%,rgba(255,190,213,.24),transparent 25%),
+    radial-gradient(circle at 90% 30%,rgba(255,216,229,.22),transparent 25%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background .35s,color .35s;
+}
+
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+img{
+  max-width:100%;
+  display:block;
+}
+
+::selection{
+  background:var(--pink);
+  color:#fff;
+}
+
+/* =========================================================
+   BACKGROUND DECOR
+========================================================= */
+
+.bg-orb{
+  position:fixed;
+  width:280px;
+  height:280px;
+  border-radius:50%;
+  filter:blur(70px);
+  opacity:.18;
+  pointer-events:none;
+  z-index:-1;
+}
+
+.orb-1{
+  background:#ff9fc1;
+  top:10%;
+  left:-120px;
+}
+
+.orb-2{
+  background:#ffd2e2;
+  right:-120px;
+  top:45%;
+}
+
+.orb-3{
+  background:#f39bbd;
+  left:40%;
+  bottom:-160px;
+}
+
+/* =========================================================
+   LOADER
+========================================================= */
+
+#pageLoader{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  transition:opacity .5s,visibility .5s;
+}
+
+#pageLoader.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.loader-logo{
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:7px;
+  color:var(--pink-dark);
+  animation:logoPulse 1.4s infinite;
+}
+
+.loader-ring{
+  position:absolute;
+  width:110px;
+  height:110px;
+  border:2px solid var(--pink-2);
+  border-top-color:var(--pink-dark);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+@keyframes logoPulse{
+  50%{transform:scale(1.06);opacity:.65}
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+  height:var(--header-h);
+  position:sticky;
+  top:0;
+  z-index:1000;
+
+  background:rgba(255,255,255,.68);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+
+  border-bottom:1px solid var(--border);
+}
+
+html.dark .header{
+  background:rgba(25,16,21,.72);
+}
+
+.header-inner{
+  width:min(1400px,calc(100% - 40px));
+  height:100%;
+  margin:auto;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:25px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+
+.logo-mark{
+  width:43px;
+  height:43px;
+  border-radius:15px;
+
+  display:grid;
+  place-items:center;
+
+  background:linear-gradient(135deg,#f6a5c3,#e77ea4);
+  color:#fff;
+
+  box-shadow:0 8px 25px rgba(231,126,164,.3);
+
+  font-size:20px;
+  font-weight:900;
+
+  transform:rotate(-4deg);
+}
+
+.logo-text{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:4px;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  gap:28px;
+}
+
+.nav a{
+  color:var(--muted);
+  font-size:14px;
+  font-weight:600;
+  transition:.25s;
+  position:relative;
+}
+
+.nav a:hover{
+  color:var(--pink-dark);
+}
+
+.nav a::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-8px;
+  width:0;
+  height:2px;
+  background:var(--pink-dark);
+  border-radius:10px;
+  transition:.25s;
+}
+
+.nav a:hover::after{
+  width:100%;
+}
+
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.icon-btn{
+  width:44px;
+  height:44px;
+  border-radius:15px;
+  background:transparent;
+  color:var(--text);
+
+  display:grid;
+  place-items:center;
+
+  font-size:20px;
+  position:relative;
+
+  transition:.25s;
+}
+
+.icon-btn:hover{
+  background:var(--pink-3);
+  color:var(--pink-dark);
+  transform:translateY(-2px);
+}
+
+.badge-count{
+  position:absolute;
+  top:1px;
+  right:1px;
+
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+
+  display:grid;
+  place-items:center;
+
+  border-radius:20px;
+  background:var(--pink-dark);
+  color:#fff;
+
+  font-size:10px;
+  font-weight:800;
+
+  border:2px solid var(--bg2);
+}
+
+.mobile-menu-btn{
+  display:none;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero{
+  width:min(1400px,calc(100% - 40px));
+  margin:30px auto 0;
+
+  min-height:590px;
+
+  border-radius:38px;
+  overflow:hidden;
+  position:relative;
+
+  background:
+    radial-gradient(circle at 80% 20%,rgba(255,255,255,.9),transparent 25%),
+    linear-gradient(135deg,#fff0f5 0%,#ffd9e6 48%,#f7aec8 100%);
+
+  box-shadow:var(--shadow);
+}
+
+html.dark .hero{
+  background:
+    radial-gradient(circle at 80% 20%,rgba(255,174,203,.16),transparent 25%),
+    linear-gradient(135deg,#351e28,#2b1821 50%,#512638);
+}
+
+.hero::before,
+.hero::after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.5);
+}
+
+.hero::before{
+  width:420px;
+  height:420px;
+  right:-130px;
+  top:-160px;
+}
+
+.hero::after{
+  width:270px;
+  height:270px;
+  right:80px;
+  bottom:-150px;
+}
+
+.hero-content{
+  position:relative;
+  z-index:2;
+
+  width:52%;
+  padding:85px 0 70px 80px;
+}
+
+.hero-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+
+  padding:9px 15px;
+  border-radius:100px;
+
+  background:rgba(255,255,255,.58);
+  border:1px solid rgba(255,255,255,.7);
+
+  color:var(--rose);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:1px;
+
+  backdrop-filter:blur(12px);
+
+  margin-bottom:25px;
+}
+
+.hero h1{
+  font-family:"Playfair Display",serif;
+  font-size:clamp(48px,6vw,86px);
+  line-height:.98;
+  letter-spacing:-3px;
+  margin-bottom:25px;
+}
+
+.hero h1 span{
+  color:var(--rose);
+  font-style:italic;
+}
+
+.hero p{
+  max-width:560px;
+  color:#866a75;
+  font-size:17px;
+  line-height:1.8;
+  margin-bottom:35px;
+}
+
+html.dark .hero p{
+  color:#d4b9c3;
+}
+
+.hero-buttons{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.primary-btn{
+  min-height:50px;
+  padding:0 23px;
+
+  border-radius:16px;
+
+  background:linear-gradient(135deg,#ef92b3,#d96895);
+  color:#fff;
+
+  font-weight:800;
+  font-size:14px;
+
+  box-shadow:0 12px 30px rgba(217,104,149,.25);
+
+  transition:.25s;
+}
+
+.primary-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 35px rgba(217,104,149,.35);
+}
+
+.secondary-btn{
+  min-height:50px;
+  padding:0 23px;
+
+  border-radius:16px;
+
+  background:rgba(255,255,255,.62);
+  color:#8d5c70;
+
+  border:1px solid rgba(255,255,255,.8);
+
+  font-weight:800;
+
+  transition:.25s;
+}
+
+.secondary-btn:hover{
+  transform:translateY(-3px);
+  background:#fff;
+}
+
+.hero-art{
+  position:absolute;
+  right:30px;
+  top:35px;
+  bottom:35px;
+  width:47%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.hero-circle{
+  width:min(470px,80%);
+  aspect-ratio:1;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(circle at 35% 25%,#fff,transparent 20%),
+    linear-gradient(145deg,#fff5f8,#f3a2bd);
+
+  box-shadow:
+    inset 0 0 60px rgba(255,255,255,.8),
+    0 35px 70px rgba(186,92,126,.18);
+
+  animation:heroFloat 5s ease-in-out infinite;
+}
+
+.hero-product{
+  position:absolute;
+  width:55%;
+  aspect-ratio:1;
+
+  display:grid;
+  place-items:center;
+
+  font-size:150px;
+
+  filter:drop-shadow(0 25px 25px rgba(150,73,103,.2));
+
+  animation:heroProduct 5s ease-in-out infinite;
+}
+
+@keyframes heroFloat{
+  50%{transform:translateY(-12px) scale(1.02)}
+}
+
+@keyframes heroProduct{
+  50%{transform:translateY(-18px) rotate(2deg)}
+}
+
+.floating-pill{
+  position:absolute;
+  padding:12px 17px;
+  border-radius:100px;
+
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(14px);
+
+  border:1px solid rgba(255,255,255,.9);
+
+  color:#815366;
+  font-size:12px;
+  font-weight:800;
+
+  box-shadow:var(--shadow-sm);
+}
+
+.pill-one{
+  left:0;
+  top:24%;
+  animation:floatOne 4s ease-in-out infinite;
+}
+
+.pill-two{
+  right:0;
+  bottom:22%;
+  animation:floatTwo 4.5s ease-in-out infinite;
+}
+
+@keyframes floatOne{
+  50%{transform:translate(-7px,-12px)}
+}
+
+@keyframes floatTwo{
+  50%{transform:translate(7px,10px)}
+}
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stats{
+  width:min(1100px,calc(100% - 40px));
+  margin:28px auto 0;
+
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  padding:20px;
+  border-radius:20px;
+
+  background:var(--surface);
+  border:1px solid var(--border);
+
+  backdrop-filter:blur(18px);
+
+  display:flex;
+  align-items:center;
+  gap:14px;
+
+  box-shadow:var(--shadow-sm);
+
+  transition:.25s;
+}
+
+.stat:hover{
+  transform:translateY(-4px);
+}
+
+.stat-icon{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+
+  display:grid;
+  place-items:center;
+
+  background:var(--pink-3);
+  font-size:20px;
+}
+
+.stat strong{
+  display:block;
+  font-size:18px;
+}
+
+.stat span{
+  color:var(--muted);
+  font-size:11px;
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section{
+  width:min(1400px,calc(100% - 40px));
+  margin:95px auto 0;
+}
+
+.section-heading{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:28px;
+}
+
+.section-kicker{
+  color:var(--pink-dark);
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  margin-bottom:8px;
+}
+
+.section-heading h2{
+  font-family:"Playfair Display",serif;
+  font-size:42px;
+  line-height:1;
+}
+
+.section-heading p{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:8px;
+}
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+.category-row{
+  display:flex;
+  gap:10px;
+  overflow:auto;
+  padding:3px 2px 12px;
+  scrollbar-width:none;
+}
+
+.category-row::-webkit-scrollbar{
+  display:none;
+}
+
+.category-chip{
+  flex-shrink:0;
+
+  padding:12px 18px;
+
+  border-radius:100px;
+
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+
+  color:var(--muted);
+
+  font-size:13px;
+  font-weight:700;
+
+  transition:.25s;
+}
+
+.category-chip:hover,
+.category-chip.active{
+  color:#fff;
+  background:linear-gradient(135deg,#f3a0bd,#dc7098);
+  border-color:transparent;
+  box-shadow:0 10px 25px rgba(220,112,152,.22);
+}
+
+/* =========================================================
+   FILTER BAR
+========================================================= */
+
+.filter-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:20px 0 25px;
+  flex-wrap:wrap;
+}
+
+.search-box{
+  flex:1;
+  min-width:240px;
+  position:relative;
+}
+
+.search-box input{
+  width:100%;
+  height:50px;
+
+  border-radius:16px;
+  border:1px solid var(--border);
+
+  background:var(--surface-solid);
+  color:var(--text);
+
+  padding:0 48px 0 18px;
+
+  outline:none;
+
+  box-shadow:var(--shadow-sm);
+
+  transition:.25s;
+}
+
+.search-box input:focus{
+  border-color:var(--pink);
+  box-shadow:0 0 0 4px rgba(245,168,196,.13);
+}
+
+.search-icon{
+  position:absolute;
+  right:17px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+}
+
+.select{
+  height:50px;
+  padding:0 15px;
+
+  border-radius:16px;
+  border:1px solid var(--border);
+
+  background:var(--surface-solid);
+  color:var(--text);
+
+  outline:none;
+  cursor:pointer;
+}
+
+/* =========================================================
+   PRODUCT GRID
+========================================================= */
+
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+
+.product-card{
+  position:relative;
+  border-radius:25px;
+
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+
+  overflow:hidden;
+
+  box-shadow:var(--shadow-sm);
+
+  transition:
+    transform .35s cubic-bezier(.2,.8,.2,1),
+    box-shadow .35s;
+
+  animation:cardIn .55s both;
+}
+
+.product-card:hover{
+  transform:translateY(-9px);
+  box-shadow:0 25px 55px rgba(190,92,128,.16);
+}
+
+@keyframes cardIn{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.product-image{
+  height:300px;
+  position:relative;
+
+  background:
+    radial-gradient(circle at 50% 35%,#fff,#ffeef4 60%,#ffdce8);
+
+  overflow:hidden;
+}
+
+html.dark .product-image{
+  background:
+    radial-gradient(circle at 50% 35%,#3c252e,#29191f);
+}
+
+.product-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+
+  transition:.55s cubic-bezier(.2,.8,.2,1);
+}
+
+.product-card:hover .product-image img{
+  transform:scale(1.07);
+}
+
+.product-placeholder{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  font-size:80px;
+}
+
+.product-badges{
+  position:absolute;
+  left:13px;
+  top:13px;
+
+  display:flex;
+  gap:6px;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+.product-badge{
+  padding:7px 10px;
+  border-radius:9px;
+
+  color:#fff;
+  background:linear-gradient(135deg,#ef8daf,#d96895);
+
+  font-size:10px;
+  font-weight:900;
+}
+
+.product-badge.sale{
+  background:#2e2227;
+}
+
+.favorite-btn{
+  position:absolute;
+  right:12px;
+  top:12px;
+
+  width:39px;
+  height:39px;
+
+  border-radius:13px;
+
+  display:grid;
+  place-items:center;
+
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(10px);
+
+  color:#8d6d78;
+  font-size:18px;
+
+  transition:.25s;
+}
+
+.favorite-btn:hover{
+  transform:scale(1.08);
+}
+
+.favorite-btn.active{
+  color:#e75f91;
+  background:#fff;
+}
+
+.quick-view{
+  position:absolute;
+  left:14px;
+  right:14px;
+  bottom:14px;
+
+  height:43px;
+
+  border-radius:13px;
+
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(12px);
+
+  color:#684955;
+  font-size:12px;
+  font-weight:800;
+
+  transform:translateY(15px);
+  opacity:0;
+
+  transition:.3s;
+}
+
+.product-card:hover .quick-view{
+  transform:translateY(0);
+  opacity:1;
+}
+
+.product-info{
+  padding:18px;
+}
+
+.product-category{
+  color:var(--pink-dark);
+  font-size:10px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:7px;
+}
+
+.product-name{
+  font-size:15px;
+  font-weight:800;
+  margin-bottom:9px;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.rating{
+  display:flex;
+  align-items:center;
+  gap:5px;
+
+  color:#e8a53d;
+  font-size:12px;
+  margin-bottom:12px;
+}
+
+.rating span{
+  color:var(--muted);
+}
+
+.price-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.price{
+  font-size:19px;
+  font-weight:900;
+}
+
+.old-price{
+  color:#ae9ca4;
+  text-decoration:line-through;
+  font-size:12px;
+  margin-left:5px;
+}
+
+.add-cart{
+  width:42px;
+  height:42px;
+
+  border-radius:13px;
+
+  display:grid;
+  place-items:center;
+
+  background:var(--pink-3);
+  color:var(--pink-dark);
+
+  font-size:19px;
+
+  transition:.25s;
+}
+
+.add-cart:hover{
+  background:linear-gradient(135deg,#f3a0bd,#dc7098);
+  color:#fff;
+  transform:scale(1.07) rotate(2deg);
+}
+
+.stock-low{
+  color:var(--warning);
+  font-size:10px;
+  font-weight:700;
+  margin-top:10px;
+}
+
+.out-stock{
+  opacity:.68;
+}
+
+.out-stock::after{
+  content:"ამოიწურა";
+  position:absolute;
+  top:15px;
+  right:15px;
+  padding:8px 10px;
+  background:#30272a;
+  color:#fff;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:800;
+}
+
+/* =========================================================
+   SKELETON
+========================================================= */
+
+.skeleton-card{
+  border-radius:25px;
+  overflow:hidden;
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+}
+
+.skeleton{
+  background:
+    linear-gradient(
+      90deg,
+      rgba(240,220,228,.5) 25%,
+      rgba(255,245,248,.9) 50%,
+      rgba(240,220,228,.5) 75%
+    );
+  background-size:200% 100%;
+  animation:shimmer 1.2s infinite;
+}
+
+.skeleton-image{
+  height:300px;
+}
+
+.skeleton-info{
+  padding:18px;
+}
+
+.skeleton-line{
+  height:14px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
+
+@keyframes shimmer{
+  to{background-position:-200% 0}
+}
+
+/* =========================================================
+   SALE BANNER
+========================================================= */
+
+.sale-banner{
+  width:min(1400px,calc(100% - 40px));
+  margin:95px auto 0;
+
+  border-radius:32px;
+  padding:35px 45px;
+
+  background:
+    radial-gradient(circle at 80% 30%,rgba(255,255,255,.4),transparent 20%),
+    linear-gradient(110deg,#f4a2bd,#dc7098);
+
+  color:#fff;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:30px;
+
+  position:relative;
+  overflow:hidden;
+
+  box-shadow:0 25px 60px rgba(211,102,146,.25);
+}
+
+.sale-banner::after{
+  content:"";
+  position:absolute;
+  width:300px;
+  height:300px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  right:-80px;
+  top:-150px;
+}
+
+.sale-title{
+  font-family:"Playfair Display",serif;
+  font-size:38px;
+}
+
+.sale-sub{
+  margin-top:7px;
+  opacity:.82;
+  font-size:13px;
+}
+
+.countdown{
+  display:flex;
+  gap:8px;
+}
+
+.time-box{
+  min-width:60px;
+  padding:10px;
+
+  text-align:center;
+
+  border-radius:14px;
+
+  background:rgba(255,255,255,.17);
+  border:1px solid rgba(255,255,255,.2);
+
+  backdrop-filter:blur(10px);
+}
+
+.time-box strong{
+  display:block;
+  font-size:21px;
+}
+
+.time-box span{
+  font-size:9px;
+  opacity:.75;
+}
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.feature-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
+
+.feature{
+  padding:28px;
+  border-radius:24px;
+
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+
+  box-shadow:var(--shadow-sm);
+
+  transition:.3s;
+}
+
+.feature:hover{
+  transform:translateY(-5px);
+}
+
+.feature-icon{
+  width:50px;
+  height:50px;
+
+  display:grid;
+  place-items:center;
+
+  border-radius:16px;
+  background:var(--pink-3);
+
+  font-size:23px;
+  margin-bottom:18px;
+}
+
+.feature h3{
+  font-size:16px;
+  margin-bottom:7px;
+}
+
+.feature p{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+}
+
+/* =========================================================
+   NEWSLETTER
+========================================================= */
+
+.newsletter{
+  width:min(900px,calc(100% - 40px));
+  margin:95px auto 0;
+
+  text-align:center;
+  padding:55px 30px;
+
+  border-radius:32px;
+
+  background:linear-gradient(135deg,var(--pink-3),rgba(255,255,255,.7));
+  border:1px solid var(--border);
+
+  box-shadow:var(--shadow-sm);
+}
+
+html.dark .newsletter{
+  background:linear-gradient(135deg,#321d27,#21161b);
+}
+
+.newsletter h2{
+  font-family:"Playfair Display",serif;
+  font-size:37px;
+  margin-bottom:10px;
+}
+
+.newsletter p{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:23px;
+}
+
+.newsletter-form{
+  max-width:500px;
+  margin:auto;
+  display:flex;
+  gap:8px;
+}
+
+.newsletter-form input{
+  flex:1;
+  min-width:0;
+  height:48px;
+
+  padding:0 16px;
+
+  border-radius:14px;
+  border:1px solid var(--border);
+
+  background:var(--surface-solid);
+  color:var(--text);
+
+  outline:none;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer{
+  margin-top:100px;
+  padding:65px 0 100px;
+
+  border-top:1px solid var(--border);
+}
+
+.footer-inner{
+  width:min(1400px,calc(100% - 40px));
+  margin:auto;
+
+  display:grid;
+  grid-template-columns:1.5fr repeat(3,1fr);
+  gap:50px;
+}
+
+.footer-brand p{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.8;
+  max-width:320px;
+  margin-top:15px;
+}
+
+.footer h4{
+  font-size:13px;
+  margin-bottom:17px;
+}
+
+.footer a{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:11px;
+  transition:.2s;
+}
+
+.footer a:hover{
+  color:var(--pink-dark);
+  transform:translateX(3px);
+}
+
+.footer-bottom{
+  width:min(1400px,calc(100% - 40px));
+  margin:45px auto 0;
+  padding-top:22px;
+
+  border-top:1px solid var(--border);
+
+  display:flex;
+  justify-content:space-between;
+
+  color:var(--muted);
+  font-size:10px;
+}
+
+/* =========================================================
+   DRAWERS / MODALS
+========================================================= */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:3000;
+
+  background:rgba(30,15,22,.35);
+  backdrop-filter:blur(5px);
+
+  opacity:0;
+  visibility:hidden;
+
+  transition:.3s;
+}
+
+.overlay.active{
+  opacity:1;
+  visibility:visible;
+}
+
+.drawer{
+  position:fixed;
+  z-index:3100;
+
+  top:0;
+  right:0;
+  height:100vh;
+  width:min(480px,100%);
+
+  background:var(--surface-solid);
+
+  box-shadow:-20px 0 60px rgba(0,0,0,.16);
+
+  transform:translateX(105%);
+  transition:.4s cubic-bezier(.2,.8,.2,1);
+
+  display:flex;
+  flex-direction:column;
+}
+
+.drawer.active{
+  transform:translateX(0);
+}
+
+.drawer-header{
+  height:80px;
+  padding:0 23px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.drawer-header h3{
+  font-family:"Playfair Display",serif;
+  font-size:25px;
+}
+
+.close-btn{
+  width:40px;
+  height:40px;
+  border-radius:13px;
+
+  background:var(--pink-3);
+  color:var(--pink-dark);
+
+  font-size:20px;
+}
+
+.drawer-body{
+  flex:1;
+  overflow:auto;
+  padding:20px;
+}
+
+.drawer-footer{
+  padding:20px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+
+/* =========================================================
+   CART
+========================================================= */
+
+.cart-empty{
+  min-height:60vh;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+
+  text-align:center;
+}
+
+.empty-icon{
+  width:90px;
+  height:90px;
+
+  display:grid;
+  place-items:center;
+
+  border-radius:30px;
+
+  background:var(--pink-3);
+
+  font-size:38px;
+  margin-bottom:18px;
+}
+
+.cart-item{
+  display:grid;
+  grid-template-columns:72px 1fr auto;
+  gap:12px;
+
+  padding:13px 0;
+
+  border-bottom:1px solid var(--border);
+}
+
+.cart-item-image{
+  width:72px;
+  height:82px;
+
+  border-radius:15px;
+  overflow:hidden;
+
+  background:var(--pink-3);
+}
+
+.cart-item-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.cart-item-name{
+  font-size:13px;
+  font-weight:800;
+  margin:4px 0;
+}
+
+.cart-item-price{
+  font-size:12px;
+  color:var(--pink-dark);
+  font-weight:800;
+}
+
+.qty-control{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:9px;
+}
+
+.qty-control button{
+  width:25px;
+  height:25px;
+
+  border-radius:8px;
+
+  background:var(--pink-3);
+  color:var(--pink-dark);
+}
+
+.qty-control span{
+  min-width:20px;
+  text-align:center;
+  font-size:12px;
+  font-weight:800;
+}
+
+.remove-item{
+  background:transparent;
+  color:var(--muted);
+  font-size:16px;
+}
+
+.cart-summary{
+  display:grid;
+  gap:11px;
+  margin-bottom:18px;
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+
+  color:var(--muted);
+  font-size:12px;
+}
+
+.summary-row.total{
+  color:var(--text);
+  font-size:19px;
+  font-weight:900;
+
+  padding-top:13px;
+  border-top:1px solid var(--border);
+}
+
+.full-btn{
+  width:100%;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal-wrap{
+  position:fixed;
+  inset:0;
+  z-index:4000;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:20px;
+
+  background:rgba(30,15,22,.38);
+  backdrop-filter:blur(8px);
+
+  opacity:0;
+  visibility:hidden;
+  transition:.3s;
+}
+
+.modal-wrap.active{
+  opacity:1;
+  visibility:visible;
+}
+
+.modal{
+  width:min(900px,100%);
+  max-height:90vh;
+
+  overflow:auto;
+
+  border-radius:30px;
+
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+
+  box-shadow:0 30px 90px rgba(0,0,0,.22);
+
+  transform:translateY(25px) scale(.97);
+  transition:.35s;
+}
+
+.modal-wrap.active .modal{
+  transform:translateY(0) scale(1);
+}
+
+.modal-top{
+  display:flex;
+  justify-content:flex-end;
+  padding:15px 15px 0;
+}
+
+.modal-content{
+  padding:20px 30px 30px;
+}
+
+/* =========================================================
+   PRODUCT DETAIL
+========================================================= */
+
+.product-detail{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
+}
+
+.detail-image{
+  height:520px;
+  border-radius:24px;
+  overflow:hidden;
+  background:var(--pink-3);
+}
+
+.detail-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:.4s;
+}
+
+.detail-image:hover img{
+  transform:scale(1.04);
+}
+
+.detail-info{
+  padding:15px 0;
+}
+
+.detail-category{
+  color:var(--pink-dark);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+.detail-info h2{
+  font-family:"Playfair Display",serif;
+  font-size:42px;
+  line-height:1.05;
+  margin:10px 0 15px;
+}
+
+.detail-description{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.8;
+  margin:20px 0;
+}
+
+.detail-price{
+  font-size:30px;
+  font-weight:900;
+}
+
+.detail-old{
+  font-size:14px;
+  color:var(--muted);
+  text-decoration:line-through;
+  margin-left:8px;
+}
+
+.detail-section{
+  margin:20px 0;
+}
+
+.detail-section label{
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  margin-bottom:9px;
+}
+
+.option-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.option{
+  min-width:42px;
+  height:37px;
+
+  padding:0 13px;
+
+  border-radius:11px;
+
+  background:var(--pink-3);
+  color:var(--muted);
+
+  border:1px solid transparent;
+
+  font-size:11px;
+  font-weight:700;
+}
+
+.option.active{
+  color:var(--pink-dark);
+  border-color:var(--pink);
+  background:rgba(245,168,196,.12);
+}
+
+.detail-actions{
+  display:flex;
+  gap:8px;
+  margin-top:25px;
+}
+
+.detail-actions .primary-btn{
+  flex:1;
+}
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:13px;
+}
+
+.form-group{
+  margin-bottom:14px;
+}
+
+.form-group.full{
+  grid-column:1/-1;
+}
+
+.form-group label{
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  margin-bottom:7px;
+}
+
+.form-control{
+  width:100%;
+  height:48px;
+
+  border:1px solid var(--border);
+  border-radius:14px;
+
+  padding:0 14px;
+
+  background:var(--bg);
+  color:var(--text);
+
+  outline:none;
+
+  transition:.2s;
+}
+
+textarea.form-control{
+  height:100px;
+  padding-top:13px;
+  resize:vertical;
+}
+
+.form-control:focus{
+  border-color:var(--pink);
+  box-shadow:0 0 0 4px rgba(245,168,196,.11);
+}
+
+.delivery-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.delivery-option{
+  padding:15px;
+
+  border-radius:16px;
+
+  border:1px solid var(--border);
+  background:var(--bg);
+
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+.delivery-option.active{
+  border-color:var(--pink);
+  background:var(--pink-3);
+}
+
+.delivery-option strong{
+  display:block;
+  font-size:12px;
+}
+
+.delivery-option span{
+  color:var(--muted);
+  font-size:10px;
+}
+
+/* =========================================================
+   PROMO
+========================================================= */
+
+.promo-row{
+  display:flex;
+  gap:7px;
+  margin:15px 0;
+}
+
+.promo-row input{
+  flex:1;
+  min-width:0;
+
+  height:43px;
+
+  border-radius:12px;
+  border:1px solid var(--border);
+
+  padding:0 13px;
+
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+}
+
+.promo-row button{
+  padding:0 15px;
+  border-radius:12px;
+
+  background:var(--pink-3);
+  color:var(--pink-dark);
+
+  font-size:11px;
+  font-weight:800;
+}
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+.profile-card{
+  padding:25px;
+}
+
+.profile-head{
+  display:flex;
+  align-items:center;
+  gap:15px;
+
+  padding-bottom:22px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+
+.avatar{
+  width:65px;
+  height:65px;
+  border-radius:22px;
+
+  display:grid;
+  place-items:center;
+
+  background:linear-gradient(135deg,#f3a1bd,#d96c97);
+  color:#fff;
+
+  font-size:25px;
+  font-weight:900;
+}
+
+/* =========================================================
+   REVIEWS
+========================================================= */
+
+.review-list{
+  display:grid;
+  gap:12px;
+  margin-top:18px;
+}
+
+.review{
+  padding:15px;
+  border-radius:16px;
+  background:var(--pink-3);
+}
+
+.review-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.review-name{
+  font-size:12px;
+  font-weight:800;
+}
+
+.review-stars{
+  color:#e9a63e;
+  font-size:11px;
+}
+
+.review-text{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.7;
+  margin-top:8px;
+}
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.success-box{
+  text-align:center;
+  padding:45px 30px;
+}
+
+.success-check{
+  width:90px;
+  height:90px;
+
+  display:grid;
+  place-items:center;
+
+  margin:0 auto 20px;
+
+  border-radius:30px;
+
+  background:#e8f7ee;
+  color:#5cb783;
+
+  font-size:42px;
+
+  animation:successPop .6s;
+}
+
+@keyframes successPop{
+  0%{transform:scale(.3);opacity:0}
+  70%{transform:scale(1.1)}
+  100%{transform:scale(1);opacity:1}
+}
+
+.order-id{
+  display:inline-block;
+  margin:15px 0;
+  padding:10px 15px;
+
+  border-radius:12px;
+  background:var(--pink-3);
+
+  color:var(--pink-dark);
+
+  font-size:12px;
+  font-weight:900;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+#toastContainer{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:99999;
+
+  display:grid;
+  gap:9px;
+}
+
+.toast{
+  min-width:260px;
+  max-width:360px;
+
+  padding:14px 17px;
+
+  border-radius:15px;
+
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+
+  box-shadow:0 20px 45px rgba(0,0,0,.13);
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  font-size:12px;
+  font-weight:700;
+
+  animation:toastIn .35s;
+}
+
+.toast.success{
+  border-left:4px solid var(--success);
+}
+
+.toast.error{
+  border-left:4px solid var(--danger);
+}
+
+.toast.warning{
+  border-left:4px solid var(--warning);
+}
+
+@keyframes toastIn{
+  from{
+    opacity:0;
+    transform:translateX(30px);
+  }
+}
+
+/* =========================================================
+   MOBILE NAV
+========================================================= */
+
+.mobile-bottom-nav{
+  display:none;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-state{
+  grid-column:1/-1;
+
+  padding:80px 20px;
+  text-align:center;
+
+  border:1px dashed var(--border);
+  border-radius:25px;
+}
+
+.empty-state .empty-icon{
+  margin:0 auto 15px;
+}
+
+.empty-state h3{
+  margin-bottom:8px;
+}
+
+.empty-state p{
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* =========================================================
+   SCROLL REVEAL
+========================================================= */
+
+.reveal{
+  opacity:0;
+  transform:translateY(25px);
+  transition:opacity .7s,transform .7s;
+}
+
+.reveal.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* =========================================================
+   BACK TOP
+========================================================= */
+
+#backTop{
+  position:fixed;
+  right:22px;
+  bottom:85px;
+
+  width:45px;
+  height:45px;
+
+  border-radius:15px;
+
+  background:var(--pink-dark);
+  color:#fff;
+
+  box-shadow:0 12px 25px rgba(210,100,145,.25);
+
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(10px);
+
+  transition:.25s;
+
+  z-index:900;
+}
+
+#backTop.show{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1100px){
+  .product-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .hero-content{
+    width:58%;
+    padding-left:55px;
+  }
+
+  .hero-art{
+    width:45%;
+  }
+}
+
+@media(max-width:850px){
+  .nav{
+    display:none;
+  }
+
+  .mobile-menu-btn{
+    display:grid;
+  }
+
+  .hero{
+    min-height:650px;
+  }
+
+  .hero-content{
+    width:100%;
+    padding:55px 35px 0;
+  }
+
+  .hero-art{
+    width:100%;
+    height:300px;
+    top:auto;
+    bottom:-15px;
+    right:0;
+  }
+
+  .hero-circle{
+    width:280px;
+  }
+
+  .hero-product{
+    font-size:100px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .product-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .feature-grid{
+    grid-template-columns:1fr;
+  }
+
+  .footer-inner{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .product-detail{
+    grid-template-columns:1fr;
+  }
+
+  .detail-image{
+    height:400px;
+  }
+}
+
+@media(max-width:600px){
+  :root{
+    --header-h:66px;
+  }
+
+  .header-inner{
+    width:calc(100% - 24px);
+  }
+
+  .logo-mark{
+    width:38px;
+    height:38px;
+  }
+
+  .logo-text{
+    font-size:17px;
+    letter-spacing:3px;
+  }
+
+  .header-actions .desktop-only{
+    display:none;
+  }
+
+  .hero,
+  .section,
+  .sale-banner,
+  .stats{
+    width:calc(100% - 24px);
+  }
+
+  .hero{
+    margin-top:12px;
+    min-height:630px;
+    border-radius:28px;
+  }
+
+  .hero-content{
+    padding:40px 24px 0;
+  }
+
+  .hero h1{
+    font-size:50px;
+    letter-spacing:-2px;
+  }
+
+  .hero p{
+    font-size:14px;
+    line-height:1.7;
+  }
+
+  .hero-art{
+    height:280px;
+  }
+
+  .floating-pill{
+    font-size:9px;
+    padding:9px 12px;
+  }
+
+  .stats{
+    gap:8px;
+  }
+
+  .stat{
+    padding:15px;
+  }
+
+  .stat-icon{
+    width:37px;
+    height:37px;
+    font-size:16px;
+  }
+
+  .stat strong{
+    font-size:15px;
+  }
+
+  .section{
+    margin-top:65px;
+  }
+
+  .section-heading h2{
+    font-size:32px;
+  }
+
+  .filter-bar{
+    align-items:stretch;
+  }
+
+  .search-box{
+    flex-basis:100%;
+  }
+
+  .select{
+    flex:1;
+  }
+
+  .product-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  .product-image{
+    height:190px;
+  }
+
+  .product-info{
+    padding:13px;
+  }
+
+  .product-name{
+    font-size:12px;
+  }
+
+  .price{
+    font-size:15px;
+  }
+
+  .add-cart{
+    width:36px;
+    height:36px;
+    font-size:16px;
+  }
+
+  .quick-view{
+    display:none;
+  }
+
+  .sale-banner{
+    margin-top:65px;
+    padding:27px 20px;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .sale-title{
+    font-size:31px;
+  }
+
+  .time-box{
+    min-width:55px;
+  }
+
+  .newsletter{
+    width:calc(100% - 24px);
+    margin-top:65px;
+  }
+
+  .newsletter-form{
+    flex-direction:column;
+  }
+
+  .newsletter-form input{
+    width:100%;
+  }
+
+  .footer{
+    padding-bottom:100px;
+  }
+
+  .footer-inner{
+    width:calc(100% - 24px);
+    grid-template-columns:1fr 1fr;
+    gap:30px 20px;
+  }
+
+  .footer-brand{
+    grid-column:1/-1;
+  }
+
+  .footer-bottom{
+    width:calc(100% - 24px);
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .modal-wrap{
+    padding:10px;
+  }
+
+  .modal{
+    border-radius:24px;
+    max-height:94vh;
+  }
+
+  .modal-content{
+    padding:15px 18px 25px;
+  }
+
+  .detail-image{
+    height:330px;
+  }
+
+  .detail-info h2{
+    font-size:34px;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .form-group.full{
+    grid-column:auto;
+  }
+
+  .delivery-options{
+    grid-template-columns:1fr;
+  }
+
+  .mobile-bottom-nav{
+    display:flex;
+
+    position:fixed;
+    z-index:2000;
+
+    bottom:10px;
+    left:10px;
+    right:10px;
+
+    height:65px;
+
+    border-radius:22px;
+
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(20px);
+
+    border:1px solid var(--border);
+
+    box-shadow:0 15px 40px rgba(170,80,112,.18);
+
+    align-items:center;
+    justify-content:space-around;
+  }
+
+  html.dark .mobile-bottom-nav{
+    background:rgba(31,21,26,.88);
+  }
+
+  .mobile-bottom-nav button{
+    width:48px;
+    height:48px;
+
+    background:transparent;
+    color:var(--muted);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+
+    gap:2px;
+
+    font-size:17px;
+  }
+
+  .mobile-bottom-nav span{
+    font-size:8px;
+    font-weight:700;
+  }
+
+  #backTop{
+    bottom:88px;
+    right:15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     BACKGROUND
+======================================================= -->
+
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
+
+<!-- LOADER -->
+<div id="pageLoader">
+  <div class="loader-ring"></div>
+  <div class="loader-logo">MAKASIA</div>
+</div>
+
+<!-- =======================================================
+     HEADER
+======================================================= -->
+
+<header class="header">
+  <div class="header-inner">
+
+    <a href="#" class="logo" onclick="scrollHome();return false;">
+      <div class="logo-mark">M</div>
+      <div class="logo-text">MAKASIA</div>
+    </a>
+
+    <nav class="nav">
+      <a href="#home">მთავარი</a>
+      <a href="#products">პროდუქტები</a>
+      <a href="#sale">აქციები</a>
+      <a href="#features">რატომ ჩვენ?</a>
+    </nav>
+
+    <div class="header-actions">
+
+      <button class="icon-btn desktop-only"
+              title="ძიება"
+              onclick="focusSearch()">
+        🔎
+      </button>
+
+      <button class="icon-btn"
+              title="Wishlist"
+              onclick="openWishlist()">
+        ♡
+        <span class="badge-count" id="wishlistCount">0</span>
+      </button>
+
+      <button class="icon-btn"
+              title="პროფილი"
+              onclick="openProfile()">
+        👤
+      </button>
+
+      <button class="icon-btn"
+              title="Dark Mode"
+              onclick="toggleTheme()"
+              id="themeBtn">
+        🌙
+      </button>
+
+      <button class="icon-btn"
+              title="კალათა"
+              onclick="openCart()">
+        🛒
+        <span class="badge-count" id="cartCount">0</span>
+      </button>
+
+      <button class="icon-btn mobile-menu-btn"
+              onclick="scrollToProducts()">
+        ☰
+      </button>
+
+    </div>
+
+  </div>
+</header>
+
+<!-- =======================================================
+     HERO
+======================================================= -->
+
+<main id="home">
+
+<section class="hero reveal">
+
+  <div class="hero-content">
+
+    <div class="hero-kicker">
+      ✨ NEW COLLECTION
+    </div>
+
+    <h1>
+      შენი სტილი,<br>
+      შენი <span>Makasia.</span>
+    </h1>
+
+    <p>
+      აღმოაჩინე გამორჩეული პროდუქტები, სპეციალური შეთავაზებები
+      და ნივთები, რომლებიც შენს ყოველდღიურობას უფრო ლამაზს გახდის.
+    </p>
+
+    <div class="hero-buttons">
+      <button class="primary-btn" onclick="scrollToProducts()">
+        აღმოაჩინე პროდუქტები →
+      </button>
+
+      <button class="secondary-btn" onclick="scrollToSale()">
+        🔥 აქციები
+      </button>
+    </div>
+
+  </div>
+
+  <div class="hero-art">
+
+    <div class="hero-circle"></div>
+
+    <div class="hero-product">
+      🛍️
+    </div>
+
+    <div class="floating-pill pill-one">
+      ⭐ მომხმარებლების რჩეული
+    </div>
+
+    <div class="floating-pill pill-two">
+      💗 Made with love
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =======================================================
+     STATS
+======================================================= -->
+
+<section class="stats reveal">
+
+  <div class="stat">
+    <div class="stat-icon">🚚</div>
+    <div>
+      <strong>სწრაფი</strong>
+      <span>მიწოდება</span>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">💗</div>
+    <div>
+      <strong>100%</strong>
+      <span>სიყვარულით</span>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">🔒</div>
+    <div>
+      <strong>უსაფრთხო</strong>
+      <span>შეკვეთა</span>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">⭐</div>
+    <div>
+      <strong id="statProducts">0+</strong>
+      <span>პროდუქტი</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- =======================================================
+     PRODUCTS
+======================================================= -->
+
+<section class="section reveal" id="products">
+
+  <div class="section-heading">
+
+    <div>
+      <div class="section-kicker">COLLECTION</div>
+      <h2>აღმოაჩინე</h2>
+      <p>შეარჩიე შენი ახალი ფავორიტი</p>
+    </div>
+
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="category-row" id="categoryRow">
+    <button class="category-chip active"
+            data-category="all"
+            onclick="setCategory('all',this)">
+      ✨ ყველა
+    </button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+
+    <div class="search-box">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="მოძებნე პროდუქტი..."
+        autocomplete="off"
+      >
+      <span class="search-icon">🔎</span>
+    </div>
+
+    <select id="sortSelect" class="select">
+      <option value="default">დალაგება</option>
+      <option value="new">ახალი</option>
+      <option value="priceLow">ფასი: დაბლიდან</option>
+      <option value="priceHigh">ფასი: მაღლიდან</option>
+      <option value="discount">ფასდაკლება</option>
+      <option value="name">სახელი</option>
+    </select>
+
+    <select id="priceFilter" class="select">
+      <option value="all">ყველა ფასი</option>
+      <option value="0-50">0–50 ₾</option>
+      <option value="50-100">50–100 ₾</option>
+      <option value="100-250">100–250 ₾</option>
+      <option value="250+">250+ ₾</option>
+    </select>
+
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="product-grid" id="productGrid">
+
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton-info">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+        <div class="skeleton skeleton-line" style="width:45%"></div>
+      </div>
+    </div>
+
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton-info">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+        <div class="skeleton skeleton-line" style="width:45%"></div>
+      </div>
+    </div>
+
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton-info">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+        <div class="skeleton skeleton-line" style="width:45%"></div>
+      </div>
+    </div>
+
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton-info">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+        <div class="skeleton skeleton-line" style="width:45%"></div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =======================================================
+     FLASH SALE
+======================================================= -->
+
+<section class="sale-banner reveal" id="sale">
+
+  <div>
+    <div class="section-kicker" style="color:#fff">
+      LIMITED TIME
+    </div>
+
+    <div class="sale-title">
+      🔥 Flash Sale
+    </div>
+
+    <div class="sale-sub">
+      იჩქარე — სპეციალური შეთავაზებები მალე დასრულდება.
+    </div>
+  </div>
+
+  <div class="countdown">
+
+    <div class="time-box">
+      <strong id="days">00</strong>
+      <span>დღე</span>
+    </div>
+
+    <div class="time-box">
+      <strong id="hours">00</strong>
+      <span>საათი</span>
+    </div>
+
+    <div class="time-box">
+      <strong id="minutes">00</strong>
+      <span>წუთი</span>
+    </div>
+
+    <div class="time-box">
+      <strong id="seconds">00</strong>
+      <span>წამი</span>
+    </div>
+
+  </div>
+
+  <button
+    class="secondary-btn"
+    onclick="showSaleProducts()">
+    ნახე შეთავაზებები
+  </button>
+
+</section>
+
+<!-- =======================================================
+     FEATURES
+======================================================= -->
+
+<section class="section reveal" id="features">
+
+  <div class="section-heading">
+    <div>
+      <div class="section-kicker">WHY MAKASIA</div>
+      <h2>რატომ ჩვენ?</h2>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+
+    <div class="feature">
+      <div class="feature-icon">🚚</div>
+      <h3>მარტივი შეკვეთა</h3>
+      <p>
+        აირჩიე პროდუქტი, დაამატე კალათაში და რამდენიმე ნაბიჯში
+        დაასრულე შეკვეთა.
+      </p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">💎</div>
+      <h3>შერჩეული პროდუქტები</h3>
+      <p>
+        ჩვენი კატალოგი შექმნილია იმისთვის, რომ საინტერესო
+        ნივთის პოვნა მარტივი იყოს.
+      </p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">💗</div>
+      <h3>სიყვარულით შექმნილი</h3>
+      <p>
+        Makasia-ს მთავარი იდეა არის მარტივი, ლამაზი და სასიამოვნო
+        shopping გამოცდილება.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =======================================================
+     NEWSLETTER
+======================================================= -->
+
+<section class="newsletter reveal">
+
+  <div class="section-kicker">
+    STAY WITH US
+  </div>
+
+  <h2>არ გამოტოვო სიახლეები 💗</h2>
+
+  <p>
+    ახალი პროდუქტები და სპეციალური შეთავაზებები.
+  </p>
+
+  <form class="newsletter-form" id="newsletterForm">
+
+    <input
+      type="email"
+      id="newsletterEmail"
+      placeholder="შენი ელფოსტა"
+      required
+    >
+
+    <button class="primary-btn">
+      გამოწერა
+    </button>
+
+  </form>
+
+</section>
+
+</main>
+
+<!-- =======================================================
+     FOOTER
+======================================================= -->
+
+<footer class="footer">
+
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+
+      <a href="#" class="logo">
+        <div class="logo-mark">M</div>
+        <div class="logo-text">MAKASIA</div>
+      </a>
+
+      <p>
+        თანამედროვე ონლაინ მაღაზია, სადაც კარგი დიზაინი,
+        სასიამოვნო გამოცდილება და შენი საყვარელი ნივთები
+        ერთმანეთს ხვდება.
+      </p>
+
+    </div>
+
+    <div>
+      <h4>მაღაზია</h4>
+      <a href="#products">ყველა პროდუქტი</a>
+      <a href="#sale">აქციები</a>
+      <a href="#" onclick="openWishlist();return false;">Wishlist</a>
+      <a href="#" onclick="openCart();return false;">კალათა</a>
+    </div>
+
+    <div>
+      <h4>დახმარება</h4>
+      <a href="#" onclick="openProfile();return false;">ჩემი პროფილი</a>
+      <a href="#" onclick="openCheckout();return false;">შეკვეთა</a>
+      <a href="#features">ჩვენ შესახებ</a>
+    </div>
+
+    <div>
+      <h4>კონტაქტი</h4>
+      <a href="mailto:info@makasia.ge">info@makasia.ge</a>
+      <a href="tel:+995000000000">+995 000 00 00 00</a>
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 MAKASIA. ყველა უფლება დაცულია.</span>
+    <span>Made with 💗</span>
+  </div>
+
+</footer>
+
+<!-- =======================================================
+     OVERLAY
+======================================================= -->
+
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- =======================================================
+     CART DRAWER
+======================================================= -->
+
+<aside class="drawer" id="cartDrawer">
+
+  <div class="drawer-header">
+    <h3>შენი კალათა 🛒</h3>
+    <button class="close-btn" onclick="closeCart()">×</button>
+  </div>
+
+  <div class="drawer-body" id="cartBody"></div>
+
+  <div class="drawer-footer">
+
+    <div class="promo-row">
+      <input
+        id="promoInput"
+        placeholder="Promo code"
+      >
+      <button onclick="applyPromo()">გამოყენება</button>
+    </div>
+
+    <div id="promoMessage"
+         style="font-size:10px;margin-bottom:10px;">
+    </div>
+
+    <div class="cart-summary">
+
+      <div class="summary-row">
+        <span>პროდუქტები</span>
+        <strong id="cartSubtotal">0 ₾</strong>
+      </div>
+
+      <div class="summary-row">
+        <span>ფასდაკლება</span>
+        <strong id="cartDiscount">0 ₾</strong>
+      </div>
+
+      <div class="summary-row">
+        <span>მიწოდება</span>
+        <strong id="cartDelivery">0 ₾</strong>
+      </div>
+
+      <div class="summary-row total">
+        <span>სულ</span>
+        <strong id="cartTotal">0 ₾</strong>
+      </div>
+
+    </div>
+
+    <button
+      class="primary-btn full-btn"
+      onclick="openCheckout()">
+      შეკვეთის გაფორმება →
+    </button>
+
+  </div>
+
+</aside>
+
+<!-- =======================================================
+     WISHLIST DRAWER
+======================================================= -->
+
+<aside class="drawer" id="wishlistDrawer">
+
+  <div class="drawer-header">
+    <h3>Wishlist 💗</h3>
+    <button class="close-btn" onclick="closeWishlist()">×</button>
+  </div>
+
+  <div class="drawer-body" id="wishlistBody"></div>
+
+</aside>
+
+<!-- =======================================================
+     PRODUCT MODAL
+======================================================= -->
+
+<div class="modal-wrap" id="productModal">
+
+  <div class="modal">
+
+    <div class="modal-top">
+      <button class="close-btn" onclick="closeProductModal()">×</button>
+    </div>
+
+    <div class="modal-content" id="productModalContent"></div>
+
+  </div>
+
+</div>
+
+<!-- =======================================================
+     CHECKOUT MODAL
+======================================================= -->
+
+<div class="modal-wrap" id="checkoutModal">
+
+  <div class="modal">
+
+    <div class="modal-top">
+      <button class="close-btn" onclick="closeCheckout()">×</button>
+    </div>
+
+    <div class="modal-content">
+
+      <div class="section-kicker">CHECKOUT</div>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:34px;margin-bottom:25px;">
+        შეკვეთის გაფორმება
+      </h2>
+
+      <form id="checkoutForm">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>სახელი და გვარი *</label>
+            <input
+              class="form-control"
+              id="customerName"
+              required
+              placeholder="მაგ. ანა ანანიძე"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>ტელეფონი *</label>
+            <input
+              class="form-control"
+              id="customerPhone"
+              required
+              placeholder="+995 5XX XX XX XX"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>ელფოსტა</label>
+            <input
+              class="form-control"
+              id="customerEmail"
+              type="email"
+              placeholder="example@email.com"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>ქალაქი *</label>
+            <input
+              class="form-control"
+              id="customerCity"
+              required
+              placeholder="ქალაქი"
+            >
+          </div>
+
+          <div class="form-group full">
+            <label>მისამართი *</label>
+            <input
+              class="form-control"
+              id="customerAddress"
+              required
+              placeholder="ქუჩა, სახლის ნომერი..."
+            >
+          </div>
+
+          <div class="form-group full">
+            <label>შეკვეთის კომენტარი</label>
+            <textarea
+              class="form-control"
+              id="orderComment"
+              placeholder="დამატებითი ინფორმაცია..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full">
+
+            <label>მიწოდების მეთოდი</label>
+
+            <div class="delivery-options">
+
+              <div
+                class="delivery-option active"
+                data-delivery="courier"
+                onclick="selectDelivery('courier',this)">
+
+                <strong>🚚 კურიერი</strong>
+                <span>5 ₾ • უფასო 100 ₾-ზე მეტი შეკვეთისას</span>
+
+              </div>
+
+              <div
+                class="delivery-option"
+                data-delivery="pickup"
+                onclick="selectDelivery('pickup',this)">
+
+                <strong>📍 თვითგატანა</strong>
+                <span>უფასო</span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="margin-top:20px;padding:20px;border-radius:18px;background:var(--pink-3);">
+
+          <div class="summary-row">
+            <span>პროდუქტები</span>
+            <strong id="checkoutSubtotal">0 ₾</strong>
+          </div>
+
+          <div class="summary-row" style="margin-top:9px;">
+            <span>ფასდაკლება</span>
+            <strong id="checkoutDiscount">0 ₾</strong>
+          </div>
+
+          <div class="summary-row" style="margin-top:9px;">
+            <span>მიწოდება</span>
+            <strong id="checkoutDelivery">0 ₾</strong>
+          </div>
+
+          <div class="summary-row total" style="margin-top:12px;">
+            <span>საბოლოო</span>
+            <strong id="checkoutTotal">0 ₾</strong>
+          </div>
+
+        </div>
+
+        <button
+          type="submit"
+          class="primary-btn full-btn"
+          style="margin-top:18px;">
+          💗 შეკვეთის დადასტურება
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =======================================================
+     PROFILE MODAL
+======================================================= -->
+
+<div class="modal-wrap" id="profileModal">
+
+  <div class="modal">
+
+    <div class="modal-top">
+      <button class="close-btn" onclick="closeProfile()">×</button>
+    </div>
+
+    <div class="modal-content profile-card">
+
+      <div class="section-kicker">MY PROFILE</div>
+
+      <div class="profile-head">
+
+        <div class="avatar" id="profileAvatar">M</div>
+
+        <div>
+          <h2 style="font-size:20px;" id="profileName">
+            სტუმარი
+          </h2>
+
+          <p style="color:var(--muted);font-size:11px;">
+            შენი Makasia პროფილი
+          </p>
+        </div>
+
+      </div>
+
+      <div id="profileContent"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =======================================================
+     REVIEW MODAL
+======================================================= -->
+
+<div class="modal-wrap" id="reviewModal">
+
+  <div class="modal">
+
+    <div class="modal-top">
+      <button class="close-btn" onclick="closeReview()">×</button>
+    </div>
+
+    <div class="modal-content">
+
+      <div class="section-kicker">REVIEW</div>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:20px;">
+        შეაფასე პროდუქტი ⭐
+      </h2>
+
+      <form id="reviewForm">
+
+        <input type="hidden" id="reviewProductId">
+
+        <div class="form-group">
+          <label>სახელი</label>
+          <input
+            class="form-control"
+            id="reviewName"
+            required
+            placeholder="შენი სახელი"
+          >
+        </div>
+
+        <div class="form-group">
+
+          <label>შეფასება</label>
+
+          <select
+            class="form-control"
+            id="reviewRating"
+            required>
+
+            <option value="5">★★★★★ — შესანიშნავი</option>
+            <option value="4">★★★★☆ — ძალიან კარგი</option>
+            <option value="3">★★★☆☆ — კარგი</option>
+            <option value="2">★★☆☆☆ — საშუალო</option>
+            <option value="1">★☆☆☆☆ — ცუდი</option>
+
+          </select>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>შენი შეფასება</label>
+
+          <textarea
+            class="form-control"
+            id="reviewComment"
+            required
+            placeholder="რას ფიქრობ ამ პროდუქტზე?"
+          ></textarea>
+
+        </div>
+
+        <button class="primary-btn full-btn">
+          შეფასების გაგზავნა
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =======================================================
+     SUCCESS MODAL
+======================================================= -->
+
+<div class="modal-wrap" id="successModal">
+
+  <div class="modal">
+
+    <div class="success-box">
+
+      <div class="success-check">✓</div>
+
+      <div class="section-kicker">ORDER COMPLETE</div>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:36px;">
+        შეკვეთა მიღებულია! 💗
+      </h2>
+
+      <p style="color:var(--muted);font-size:13px;line-height:1.7;margin-top:10px;">
+        მადლობა შეკვეთისთვის.
+        შენი შეკვეთის ნომერია:
+      </p>
+
+      <div class="order-id" id="successOrderId">
+        MAK-000000
+      </div>
+
+      <div>
+        <button
+          class="primary-btn"
+          onclick="closeSuccess();openProfile();">
+          ჩემი შეკვეთის ნახვა
+        </button>
+
+        <button
+          class="secondary-btn"
+          onclick="closeSuccess();"
+          style="margin-left:5px;">
+          გაგრძელება
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MOBILE NAV -->
+
+<nav class="mobile-bottom-nav">
+
+  <button onclick="scrollHome()">
+    🏠
+    <span>მთავარი</span>
+  </button>
+
+  <button onclick="focusSearch()">
+    🔎
+    <span>ძებნა</span>
+  </button>
+
+  <button onclick="openWishlist()">
+    ♡
+    <span>Wishlist</span>
+  </button>
+
+  <button onclick="openCart()">
+    🛒
+    <span>კალათა</span>
+  </button>
+
+  <button onclick="openProfile()">
+    👤
+    <span>პროფილი</span>
+  </button>
+
+</nav>
+
+<button id="backTop" onclick="scrollHome()">↑</button>
+
+<div id="toastContainer"></div>
+
+<script>
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuZpWaZFY18eyJNOMjFap2XVTr6D0cMyE",
+  authDomain: "makasia.firebaseapp.com",
+  projectId: "makasia",
+  storageBucket: "makasia.firebasestorage.app",
+  messagingSenderId: "51102698357",
+  appId: "1:51102698357:web:59f62a3c8e76663947a13c",
+  measurementId: "G-PJM63G16X4"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const DELIVERY_FEE = 5;
+const FREE_DELIVERY_FROM = 100;
+
+const PROMOS = {
+  "MAKASIA10": {
+    type: "percent",
+    value: 10,
+    min: 0
+  },
+
+  "WELCOME": {
+    type: "percent",
+    value: 15,
+    min: 50
+  },
+
+  "LOVE20": {
+    type: "percent",
+    value: 20,
+    min: 150
+  }
+};
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let products = [];
+let reviews = [];
+
+let cart = loadJSON("makasia_cart", []);
+let wishlist = loadJSON("makasia_wishlist", []);
+
+let currentCategory = "all";
+let selectedDelivery = "courier";
+
+let appliedPromo = null;
+
+let guestId =
+  localStorage.getItem("makasia_guest_id") ||
+  createGuestId();
+
+localStorage.setItem("makasia_guest_id", guestId);
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function loadJSON(key, fallback){
+  try{
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  }catch{
+    return fallback;
+  }
+}
+
+function saveState(){
+  localStorage.setItem("makasia_cart", JSON.stringify(cart));
+  localStorage.setItem("makasia_wishlist", JSON.stringify(wishlist));
+}
+
+function createGuestId(){
+  return "guest_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2,10);
+}
+
+function escapeHTML(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function formatPrice(value){
+  const n = Number(value) || 0;
+  return n.toLocaleString("ka-GE") + " ₾";
+}
+
+function getProductPrice(product){
+  return Number(product.price) || 0;
+}
+
+function getOldPrice(product){
+  return Number(product.oldPrice) || 0;
+}
+
+function getDiscount(product){
+  const price = getProductPrice(product);
+  const old = getOldPrice(product);
+
+  if(old > price && price > 0){
+    return Math.round((1 - price / old) * 100);
+  }
+
+  return 0;
+}
+
+function isAvailable(product){
+  if(
+    String(product.status || "").toLowerCase() === "inactive" ||
+    String(product.status || "").toLowerCase() === "დამალული"
+  ){
+    return false;
+  }
+
+  if(
+    product.stock !== undefined &&
+    product.stock !== null &&
+    Number(product.stock) <= 0
+  ){
+    return false;
+  }
+
+  return true;
+}
+
+/* =========================================================
+   LOAD PRODUCTS
+========================================================= */
+
+async function loadProducts(){
+
+  try{
+
+    const snapshot = await db
+      .collection("products")
+      .orderBy("createdAt","desc")
+      .get();
+
+    products = snapshot.docs.map(doc => ({
+      id:doc.id,
+      ...doc.data()
+    }));
+
+  }catch(error){
+
+    console.warn(
+      "products orderBy failed, trying normal query:",
+      error
+    );
+
+    try{
+
+      const snapshot = await db
+        .collection("products")
+        .get();
+
+      products = snapshot.docs.map(doc => ({
+        id:doc.id,
+        ...doc.data()
+      }));
+
+    }catch(err){
+
+      console.error(err);
+
+      products = [];
+
+      showToast(
+        "პროდუქტების ჩატვირთვა ვერ მოხერხდა.",
+        "error"
+      );
+    }
+  }
+
+  renderCategories();
+  renderProducts();
+
+  document.getElementById("statProducts").textContent =
+    products.length + "+";
+
+  setTimeout(() => {
+    document.getElementById("pageLoader").classList.add("hide");
+  },500);
+}
+
+/* =========================================================
+   LOAD REVIEWS
+========================================================= */
+
+async function loadReviews(){
+
+  try{
+
+    const snapshot = await db
+      .collection("reviews")
+      .get();
+
+    reviews = snapshot.docs.map(doc => ({
+      id:doc.id,
+      ...doc.data()
+    }));
+
+  }catch(error){
+
+    console.warn("Reviews unavailable:",error);
+
+    reviews = [];
+  }
+}
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+function renderCategories(){
+
+  const row =
+    document.getElementById("categoryRow");
+
+  const categories = [
+    ...new Set(
+      products
+        .map(p => String(p.category || "").trim())
+        .filter(Boolean)
+    )
+  ];
+
+  row.innerHTML = `
+    <button
+      class="category-chip active"
+      data-category="all"
+      onclick="setCategory('all',this)">
+      ✨ ყველა
+    </button>
+  `;
+
+  categories.forEach(category => {
+
+    row.insertAdjacentHTML(
+      "beforeend",
+      `
+      <button
+        class="category-chip"
+        data-category="${escapeHTML(category)}"
+        onclick="setCategory('${escapeHTML(category).replace(/'/g,"\\'")}',this)">
+        ${escapeHTML(category)}
+      </button>
+      `
+    );
+  });
+}
+
+function setCategory(category,button){
+
+  currentCategory = category;
+
+  document
+    .querySelectorAll(".category-chip")
+    .forEach(el => el.classList.remove("active"));
+
+  if(button){
+    button.classList.add("active");
+  }
+
+  renderProducts();
+}
+
+/* =========================================================
+   FILTER / SORT
+========================================================= */
+
+function getFilteredProducts(){
+
+  let list = [...products];
+
+  const search =
+    document
+      .getElementById("searchInput")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const sort =
+    document.getElementById("sortSelect").value;
+
+  const priceFilter =
+    document.getElementById("priceFilter").value;
+
+  if(currentCategory !== "all"){
+
+    list = list.filter(
+      p => String(p.category || "") === currentCategory
+    );
+  }
+
+  if(search){
+
+    list = list.filter(p => {
+
+      const text = [
+        p.name,
+        p.category,
+        p.description,
+        p.color,
+        p.size
+      ]
+      .join(" ")
+      .toLowerCase();
+
+      return text.includes(search);
+    });
+  }
+
+  if(priceFilter !== "all"){
+
+    list = list.filter(p => {
+
+      const price = getProductPrice(p);
+
+      if(priceFilter === "0-50"){
+        return price <= 50;
+      }
+
+      if(priceFilter === "50-100"){
+        return price > 50 && price <= 100;
+      }
+
+      if(priceFilter === "100-250"){
+        return price > 100 && price <= 250;
+      }
+
+      if(priceFilter === "250+"){
+        return price > 250;
+      }
+
+      return true;
+    });
+  }
+
+  if(sort === "priceLow"){
+    list.sort(
+      (a,b) =>
+        getProductPrice(a) -
+        getProductPrice(b)
+    );
+  }
+
+  if(sort === "priceHigh"){
+    list.sort(
+      (a,b) =>
+        getProductPrice(b) -
+        getProductPrice(a)
+    );
+  }
+
+  if(sort === "discount"){
+    list.sort(
+      (a,b) =>
+        getDiscount(b) -
+        getDiscount(a)
+    );
+  }
+
+  if(sort === "name"){
+    list.sort(
+      (a,b) =>
+        String(a.name || "")
+          .localeCompare(
+            String(b.name || ""),
+            "ka"
+          )
+    );
+  }
+
+  if(sort === "new"){
+
+    list.sort((a,b) => {
+
+      const aa =
+        a.createdAt?.seconds ||
+        a.createdAt?._seconds ||
+        0;
+
+      const bb =
+        b.createdAt?.seconds ||
+        b.createdAt?._seconds ||
+        0;
+
+      return bb - aa;
+    });
+  }
+
+  return list;
+}
+
+/* =========================================================
+   PRODUCT RENDER
+========================================================= */
+
+function renderProducts(){
+
+  const grid =
+    document.getElementById("productGrid");
+
+  const list =
+    getFilteredProducts();
+
+  if(!list.length){
+
+    grid.innerHTML = `
+      <div class="empty-state">
+
+        <div class="empty-icon">
+          🔍
+        </div>
+
+        <h3>პროდუქტი ვერ მოიძებნა</h3>
+
+        <p>
+          სცადე სხვა სიტყვა, კატეგორია ან ფასის ფილტრი.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  grid.innerHTML =
+    list.map((product,index) =>
+      productCard(product,index)
+    ).join("");
+}
+
+function productCard(product,index){
+
+  const discount =
+    getDiscount(product);
+
+  const price =
+    getProductPrice(product);
+
+  const old =
+    getOldPrice(product);
+
+  const available =
+    isAvailable(product);
+
+  const liked =
+    wishlist.includes(product.id);
+
+  const rating =
+    getProductRating(product.id);
+
+  const stock =
+    Number(product.stock);
+
+  const lowStock =
+    Number.isFinite(stock) &&
+    stock > 0 &&
+    stock <= 5;
+
+  const image =
+    product.image ||
+    product.image2 ||
+    "";
+
+  return `
+    <article
+      class="product-card ${available ? "" : "out-stock"}"
+      style="animation-delay:${Math.min(index * 45,500)}ms">
+
+      <div class="product-image">
+
+        ${
+          image
+          ?
+          `<img
+            src="${escapeHTML(image)}"
+            alt="${escapeHTML(product.name || "Product")}"
+            loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
+          >
+          <div
+            class="product-placeholder"
+            style="display:none;">
+            🛍️
+          </div>`
+          :
+          `<div class="product-placeholder">🛍️</div>`
+        }
+
+        <div class="product-badges">
+
+          ${
+            product.badge
+            ?
+            `<div class="product-badge">
+              ${escapeHTML(product.badge)}
+            </div>`
+            :
+            ""
+          }
+
+          ${
+            discount > 0
+            ?
+            `<div class="product-badge sale">
+              -${discount}%
+            </div>`
+            :
+            ""
+          }
+
+        </div>
+
+        <button
+          class="favorite-btn ${liked ? "active" : ""}"
+          onclick="toggleWishlist('${product.id}',event)"
+          title="Wishlist">
+
+          ${liked ? "♥" : "♡"}
+
+        </button>
+
+        ${
+          available
+          ?
+          `<button
+            class="quick-view"
+            onclick="openProduct('${product.id}')">
+            👁 სწრაფი ნახვა
+          </button>`
+          :
+          ""
+        }
+
+      </div>
+
+      <div class="product-info">
+
+        <div class="product-category">
+          ${escapeHTML(product.category || "MAKASIA")}
+        </div>
+
+        <div
+          class="product-name"
+          title="${escapeHTML(product.name || "")}">
+          ${escapeHTML(product.name || "პროდუქტი")}
+        </div>
+
+        <div class="rating">
+          ${renderStars(rating)}
+          <span>
+            ${rating.toFixed(1)}
+          </span>
+        </div>
+
+        <div class="price-row">
+
+          <div>
+
+            <span class="price">
+              ${formatPrice(price)}
+            </span>
+
+            ${
+              old > price
+              ?
+              `<span class="old-price">
+                ${formatPrice(old)}
+              </span>`
+              :
+              ""
+            }
+
+          </div>
+
+          ${
+            available
+            ?
+            `<button
+              class="add-cart"
+              onclick="addToCart('${product.id}')"
+              title="კალათაში დამატება">
+              +
+            </button>`
+            :
+            `<div
+              style="font-size:10px;color:var(--muted);font-weight:800;">
+              ამოიწურა
+            </div>`
+          }
+
+        </div>
+
+        ${
+          lowStock
+          ?
+          `<div class="stock-low">
+            🔥 მხოლოდ ${stock} ცალი დარჩა
+          </div>`
+          :
+          ""
+        }
+
+      </div>
+
+    </article>
+  `;
+}
+
+/* =========================================================
+   RATING
+========================================================= */
+
+function getProductReviews(productId){
+
+  return reviews.filter(r =>
+    r.productId === productId &&
+    (
+      r.status === "approved" ||
+      r.status === "დადასტურებული" ||
+      r.status === undefined
+    )
+  );
+}
+
+function getProductRating(productId){
+
+  const list =
+    getProductReviews(productId);
+
+  if(!list.length){
+    return 5;
+  }
+
+  const total =
+    list.reduce(
+      (sum,r) =>
+        sum + (Number(r.rating) || 0),
+      0
+    );
+
+  return total / list.length;
+}
+
+function renderStars(rating){
+
+  let html = "";
+
+  for(let i=1;i<=5;i++){
+    html += i <= Math.round(rating)
+      ? "★"
+      : "☆";
+  }
+
+  return html;
+}
+
+/* =========================================================
+   CART
+========================================================= */
+
+function addToCart(productId){
+
+  const product =
+    products.find(p => p.id === productId);
+
+  if(!product){
+    showToast("პროდუქტი ვერ მოიძებნა.","error");
+    return;
+  }
+
+  if(!isAvailable(product)){
+    showToast("ეს პროდუქტი ამოიწურა.","warning");
+    return;
+  }
+
+  const stock =
+    Number(product.stock);
+
+  const existing =
+    cart.find(item =>
+      item.productId === productId
+    );
+
+  if(existing){
+
+    if(
+      Number.isFinite(stock) &&
+      stock > 0 &&
+      existing.quantity >= stock
+    ){
+      showToast(
+        "მარაგში მეტი რაოდენობა აღარ არის.",
+        "warning"
+      );
+      return;
+    }
+
+    existing.quantity++;
+
+  }else{
+
+    cart.push({
+      productId,
+      quantity:1
+    });
+  }
+
+  saveState();
+  updateCartUI();
+
+  showToast(
+    "პროდუქტი დაემატა კალათაში 💗",
+    "success"
+  );
+}
+
+function changeQuantity(productId,delta){
+
+  const item =
+    cart.find(i =>
+      i.productId === productId
+    );
+
+  const product =
+    products.find(p =>
+      p.id === productId
+    );
+
+  if(!item || !product) return;
+
+  const newQty =
+    item.quantity + delta;
+
+  const stock =
+    Number(product.stock);
+
+  if(
+    newQty > 0 &&
+    Number.isFinite(stock) &&
+    stock > 0 &&
+    newQty > stock
+  ){
+    showToast(
+      "მარაგში ამ რაოდენობის პროდუქტი აღარ არის.",
+      "warning"
+    );
+    return;
+  }
+
+  if(newQty <= 0){
+
+    cart =
+      cart.filter(i =>
+        i.productId !== productId
+      );
+
+  }else{
+
+    item.quantity = newQty;
+  }
+
+  saveState();
+  updateCartUI();
+}
+
+function removeFromCart(productId){
+
+  cart =
+    cart.filter(
+      i => i.productId !== productId
+    );
+
+  saveState();
+  updateCartUI();
+
+  showToast(
+    "პროდუქტი წაიშალა კალათიდან."
+  );
+}
+
+function getCartItems(){
+
+  return cart
+    .map(item => {
+
+      const product =
+        products.find(p =>
+          p.id === item.productId
+        );
+
+      if(!product) return null;
+
+      return {
+        ...item,
+        product
+      };
+    })
+    .filter(Boolean);
+}
+
+function calculateCart(){
+
+  const items =
+    getCartItems();
+
+  const subtotal =
+    items.reduce(
+      (sum,item) =>
+        sum +
+        getProductPrice(item.product) *
+        item.quantity,
+      0
+    );
+
+  let discount = 0;
+
+  if(appliedPromo){
+
+    const promo =
+      PROMOS[appliedPromo.code];
+
+    if(promo){
+
+      if(subtotal >= promo.min){
+
+        if(promo.type === "percent"){
+          discount =
+            subtotal *
+            promo.value /
+            100;
+        }
+      }
+    }
+  }
+
+  const afterDiscount =
+    Math.max(0,subtotal-discount);
+
+  let delivery = 0;
+
+  if(selectedDelivery === "courier"){
+
+    delivery =
+      afterDiscount >= FREE_DELIVERY_FROM
+      ? 0
+      : DELIVERY_FEE;
+  }
+
+  const total =
+    afterDiscount + delivery;
+
+  return {
+    items,
+    subtotal,
+    discount,
+    delivery,
+    total
+  };
+}
+
+function updateCartUI(){
+
+  const data =
+    calculateCart();
+
+  const count =
+    cart.reduce(
+      (sum,item) =>
+        sum + Number(item.quantity || 0),
+      0
+    );
+
+  document.getElementById("cartCount").textContent =
+    count;
+
+  document.getElementById("wishlistCount").textContent =
+    wishlist.length;
+
+  document.getElementById("cartSubtotal").textContent =
+    formatPrice(data.subtotal);
+
+  document.getElementById("cartDiscount").textContent =
+    data.discount
+      ? "-" + formatPrice(data.discount)
+      : "0 ₾";
+
+  document.getElementById("cartDelivery").textContent =
+    data.delivery === 0
+      ? "უფასო"
+      : formatPrice(data.delivery);
+
+  document.getElementById("cartTotal").textContent =
+    formatPrice(data.total);
+
+  renderCart();
+}
+
+/* =========================================================
+   CART RENDER
+========================================================= */
+
+function renderCart(){
+
+  const body =
+    document.getElementById("cartBody");
+
+  const data =
+    calculateCart();
+
+  if(!data.items.length){
+
+    body.innerHTML = `
+      <div class="cart-empty">
+
+        <div class="empty-icon">
+          🛒
+        </div>
+
+        <h3>კალათა ცარიელია</h3>
+
+        <p style="color:var(--muted);font-size:12px;margin-top:7px;">
+          ჯერ რამე ლამაზი დაამატე 💗
+        </p>
+
+        <button
+          class="primary-btn"
+          style="margin-top:20px;"
+          onclick="closeCart();scrollToProducts();">
+          პროდუქტების ნახვა
+        </button>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  body.innerHTML =
+    data.items.map(item => {
+
+      const p = item.product;
+
+      return `
+        <div class="cart-item">
+
+          <div class="cart-item-image">
+
+            ${
+              p.image
+              ?
+              `<img
+                src="${escapeHTML(p.image)}"
+                alt="${escapeHTML(p.name || "")}"
+              >`
+              :
+              `<div
+                style="height:100%;display:grid;place-items:center;font-size:30px;">
+                🛍️
+              </div>`
+            }
+
+          </div>
+
+          <div>
+
+            <div class="cart-item-name">
+              ${escapeHTML(p.name || "პროდუქტი")}
+            </div>
+
+            <div class="cart-item-price">
+              ${formatPrice(getProductPrice(p))}
+            </div>
+
+            <div class="qty-control">
+
+              <button
+                onclick="changeQuantity('${p.id}',-1)">
+                −
+              </button>
+
+              <span>
+                ${item.quantity}
+              </span>
+
+              <button
+                onclick="changeQuantity('${p.id}',1)">
+                +
+              </button>
+
+            </div>
+
+          </div>
+
+          <button
+            class="remove-item"
+            onclick="removeFromCart('${p.id}')">
+            ×
+          </button>
+
+        </div>
+      `;
+
+    }).join("");
+}
+
+/* =========================================================
+   WISHLIST
+========================================================= */
+
+function toggleWishlist(productId,event){
+
+  if(event){
+    event.stopPropagation();
+  }
+
+  if(wishlist.includes(productId)){
+
+    wishlist =
+      wishlist.filter(id =>
+        id !== productId
+      );
+
+    showToast(
+      "Wishlist-იდან წაიშალა."
+    );
+
+  }else{
+
+    wishlist.push(productId);
+
+    showToast(
+      "Wishlist-ში დაემატა 💗",
+      "success"
+    );
+  }
+
+  saveState();
+
+  updateCartUI();
+  renderProducts();
+  renderWishlist();
+}
+
+function renderWishlist(){
+
+  const body =
+    document.getElementById("wishlistBody");
+
+  const list =
+    wishlist
+      .map(id =>
+        products.find(p =>
+          p.id === id
+        )
+      )
+      .filter(Boolean);
+
+  if(!list.length){
+
+    body.innerHTML = `
+      <div class="cart-empty">
+
+        <div class="empty-icon">
+          ♡
+        </div>
+
+        <h3>Wishlist ცარიელია</h3>
+
+        <p style="color:var(--muted);font-size:12px;margin-top:7px;">
+          დააჭირე ♡ ღილაკს საყვარელ პროდუქტებზე.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  body.innerHTML =
+    list.map(p => `
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:75px 1fr auto;
+          gap:12px;
+          align-items:center;
+          padding:13px 0;
+          border-bottom:1px solid var(--border);
+        ">
+
+        <div
+          style="
+            width:75px;
+            height:85px;
+            border-radius:14px;
+            overflow:hidden;
+            background:var(--pink-3);
+          ">
+
+          ${
+            p.image
+            ?
+            `<img
+              src="${escapeHTML(p.image)}"
+              style="width:100%;height:100%;object-fit:cover;"
+            >`
+            :
+            `<div style="height:100%;display:grid;place-items:center;font-size:28px;">
+              🛍️
+            </div>`
+          }
+
+        </div>
+
+        <div>
+
+          <div style="font-size:12px;font-weight:800;">
+            ${escapeHTML(p.name || "")}
+          </div>
+
+          <div
+            style="
+              font-size:12px;
+              color:var(--pink-dark);
+              font-weight:900;
+              margin-top:5px;
+            ">
+            ${formatPrice(getProductPrice(p))}
+          </div>
+
+          <button
+            class="primary-btn"
+            style="
+              min-height:34px;
+              padding:0 11px;
+              font-size:10px;
+              margin-top:8px;
+            "
+            onclick="addToCart('${p.id}')">
+            🛒 კალათაში
+          </button>
+
+        </div>
+
+        <button
+          class="remove-item"
+          onclick="toggleWishlist('${p.id}')">
+          ♥
+        </button>
+
+      </div>
+
+    `).join("");
+}
+
+/* =========================================================
+   PRODUCT MODAL
+========================================================= */
+
+async function openProduct(productId){
+
+  const p =
+    products.find(x =>
+      x.id === productId
+    );
+
+  if(!p) return;
+
+  const rating =
+    getProductRating(productId);
+
+  const productReviews =
+    getProductReviews(productId);
+
+  const discount =
+    getDiscount(p);
+
+  const price =
+    getProductPrice(p);
+
+  const old =
+    getOldPrice(p);
+
+  const image =
+    p.image ||
+    p.image2 ||
+    "";
+
+  const colors =
+    String(p.color || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+
+  const sizes =
+    String(p.size || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+
+  document.getElementById("productModalContent").innerHTML = `
+
+    <div class="product-detail">
+
+      <div>
+
+        <div class="detail-image">
+
+          ${
+            image
+            ?
+            `<img
+              src="${escapeHTML(image)}"
+              alt="${escapeHTML(p.name || "")}"
+              id="detailMainImage"
+            >`
+            :
+            `<div
+              style="
+                height:100%;
+                display:grid;
+                place-items:center;
+                font-size:100px;
+              ">
+              🛍️
+            </div>`
+          }
+
+        </div>
+
+        ${
+          p.image2
+          ?
+          `<div
+            style="
+              display:flex;
+              gap:8px;
+              margin-top:9px;
+            ">
+
+            <button
+              onclick="changeDetailImage('${escapeHTML(p.image)}')"
+              style="
+                width:65px;
+                height:65px;
+                border-radius:12px;
+                overflow:hidden;
+                border:2px solid var(--pink);
+              ">
+              <img
+                src="${escapeHTML(p.image)}"
+                style="width:100%;height:100%;object-fit:cover;"
+              >
+            </button>
+
+            <button
+              onclick="changeDetailImage('${escapeHTML(p.image2)}')"
+              style="
+                width:65px;
+                height:65px;
+                border-radius:12px;
+                overflow:hidden;
+                border:1px solid var(--border);
+              ">
+              <img
+                src="${escapeHTML(p.image2)}"
+                style="width:100%;height:100%;object-fit:cover;"
+              >
+            </button>
+
+          </div>`
+          :
+          ""
+        }
+
+      </div>
+
+      <div class="detail-info">
+
+        <div class="detail-category">
+          ${escapeHTML(p.category || "MAKASIA")}
+        </div>
+
+        <h2>
+          ${escapeHTML(p.name || "პროდუქტი")}
+        </h2>
+
+        <div class="rating" style="font-size:14px;">
+          ${renderStars(rating)}
+          <span>
+            ${rating.toFixed(1)}
+            • ${productReviews.length} შეფასება
+          </span>
+        </div>
+
+        <div style="margin-top:20px;">
+
+          <span class="detail-price">
+            ${formatPrice(price)}
+          </span>
+
+          ${
+            old > price
+            ?
+            `<span class="detail-old">
+              ${formatPrice(old)}
+            </span>
+            <span
+              style="
+                margin-left:8px;
+                color:var(--pink-dark);
+                font-size:11px;
+                font-weight:900;
+              ">
+              -${discount}%
+            </span>`
+            :
+            ""
+          }
+
+        </div>
+
+        ${
+          p.description
+          ?
+          `<div class="detail-description">
+            ${escapeHTML(p.description)}
+          </div>`
+          :
+          ""
+        }
+
+        ${
+          colors.length
+          ?
+          `
+          <div class="detail-section">
+
+            <label>ფერი</label>
+
+            <div class="option-row">
+
+              ${colors.map((c,i) => `
+                <button
+                  class="option ${i===0 ? "active" : ""}"
+                  onclick="selectOption(this)">
+                  ${escapeHTML(c)}
+                </button>
+              `).join("")}
+
+            </div>
+
+          </div>
+          `
+          :
+          ""
+        }
+
+        ${
+          sizes.length
+          ?
+          `
+          <div class="detail-section">
+
+            <label>ზომა</label>
+
+            <div class="option-row">
+
+              ${sizes.map((s,i) => `
+                <button
+                  class="option ${i===0 ? "active" : ""}"
+                  onclick="selectOption(this)">
+                  ${escapeHTML(s)}
+                </button>
+              `).join("")}
+
+            </div>
+
+          </div>
+          `
+          :
+          ""
+        }
+
+        ${
+          p.stock !== undefined
+          ?
+          `<div
+            style="
+              color:${Number(p.stock) > 0 ? "var(--success)" : "var(--danger)"};
+              font-size:11px;
+              font-weight:800;
+              margin-top:18px;
+            ">
+            ${
+              Number(p.stock) > 0
+              ? `📦 მარაგშია: ${Number(p.stock)}`
+              : "❌ ამოიწურა"
+            }
+          </div>`
+          :
+          ""
+        }
+
+        <div class="detail-actions">
+
+          ${
+            isAvailable(p)
+            ?
+            `<button
+              class="primary-btn"
+              onclick="addToCart('${p.id}');closeProductModal();">
+              🛒 კალათაში დამატება
+            </button>`
+            :
+            `<button
+              class="primary-btn"
+              disabled
+              style="opacity:.5;">
+              ამოიწურა
+            </button>`
+          }
+
+          <button
+            class="icon-btn"
+            style="border:1px solid var(--border);"
+            onclick="toggleWishlist('${p.id}');openProduct('${p.id}')">
+            ${wishlist.includes(p.id) ? "♥" : "♡"}
+          </button>
+
+          <button
+            class="icon-btn"
+            style="border:1px solid var(--border);"
+            onclick="shareProduct('${p.id}')">
+            ↗
+          </button>
+
+        </div>
+
+        <button
+          class="secondary-btn"
+          style="width:100%;margin-top:10px;"
+          onclick="openReviewModal('${p.id}')">
+          ⭐ შეფასების დაწერა
+        </button>
+
+        <div style="margin-top:30px;">
+
+          <h3 style="font-size:16px;">
+            მომხმარებლების შეფასებები
+          </h3>
+
+          ${
+            productReviews.length
+            ?
+            `<div class="review-list">
+              ${productReviews.slice(0,5).map(r => `
+                <div class="review">
+
+                  <div class="review-head">
+
+                    <div class="review-name">
+                      ${escapeHTML(r.name || "მომხმარებელი")}
+                    </div>
+
+                    <div class="review-stars">
+                      ${renderStars(Number(r.rating) || 0)}
+                    </div>
+
+                  </div>
+
+                  <div class="review-text">
+                    ${escapeHTML(r.comment || "")}
+                  </div>
+
+                </div>
+              `).join("")}
+            </div>`
+            :
+            `<p
+              style="
+                color:var(--muted);
+                font-size:11px;
+                margin-top:10px;
+              ">
+              ჯერ შეფასება არ არის.
+            </p>`
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+    ${
+      products.filter(x =>
+        x.category &&
+        x.category === p.category &&
+        x.id !== p.id
+      ).length
+      ?
+      `
+      <div style="margin-top:40px;">
+
+        <h3 style="font-family:'Playfair Display',serif;font-size:27px;">
+          შეიძლება ასევე მოგეწონოს 💗
+        </h3>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:10px;
+            margin-top:15px;
+          "
+          class="related-grid">
+
+          ${
+            products
+              .filter(x =>
+                x.category === p.category &&
+                x.id !== p.id
+              )
+              .slice(0,4)
+              .map(x => `
+                <button
+                  onclick="openProduct('${x.id}')"
+                  style="
+                    background:var(--pink-3);
+                    border-radius:14px;
+                    overflow:hidden;
+                    text-align:left;
+                    color:var(--text);
+                  ">
+
+                  <div style="height:100px;overflow:hidden;">
+                    ${
+                      x.image
+                      ?
+                      `<img
+                        src="${escapeHTML(x.image)}"
+                        style="width:100%;height:100%;object-fit:cover;"
+                      >`
+                      :
+                      `<div style="height:100%;display:grid;place-items:center;font-size:30px;">
+                        🛍️
+                      </div>`
+                    }
+                  </div>
+
+                  <div style="padding:8px;font-size:10px;font-weight:800;">
+                    ${escapeHTML(x.name || "")}
+                  </div>
+
+                </button>
+              `).join("")
+          }
+
+        </div>
+
+      </div>
+      `
+      :
+      ""
+    }
+
+  `;
+
+  openModal("productModal");
+}
+
+function changeDetailImage(url){
+
+  const image =
+    document.getElementById("detailMainImage");
+
+  if(image){
+    image.src = url;
+  }
+}
+
+function selectOption(button){
+
+  const parent =
+    button.parentElement;
+
+  parent
+    .querySelectorAll(".option")
+    .forEach(x =>
+      x.classList.remove("active")
+    );
+
+  button.classList.add("active");
+}
+
+/* =========================================================
+   SHARE
+========================================================= */
+
+async function shareProduct(productId){
+
+  const p =
+    products.find(x =>
+      x.id === productId
+    );
+
+  if(!p) return;
+
+  const url =
+    location.origin +
+    location.pathname +
+    "?product=" +
+    encodeURIComponent(productId);
+
+  try{
+
+    if(navigator.share){
+
+      await navigator.share({
+        title:p.name,
+        text:"ნახე ეს პროდუქტი Makasia-ზე 💗",
+        url
+      });
+
+    }else{
+
+      await navigator.clipboard.writeText(url);
+
+      showToast(
+        "პროდუქტის ბმული დაკოპირდა 💗",
+        "success"
+      );
+    }
+
+  }catch{}
+}
+
+/* =========================================================
+   CHECKOUT
+========================================================= */
+
+function openCheckout(){
+
+  const data =
+    calculateCart();
+
+  if(!data.items.length){
+
+    showToast(
+      "ჯერ დაამატე პროდუქტი კალათაში.",
+      "warning"
+    );
+
+    return;
+  }
+
+  updateCheckoutSummary();
+
+  closeCart();
+
+  openModal("checkoutModal");
+}
+
+function closeCheckout(){
+  closeModal("checkoutModal");
+}
+
+function selectDelivery(type,element){
+
+  selectedDelivery = type;
+
+  document
+    .querySelectorAll(".delivery-option")
+    .forEach(el =>
+      el.classList.remove("active")
+    );
+
+  element.classList.add("active");
+
+  updateCheckoutSummary();
+  updateCartUI();
+}
+
+function updateCheckoutSummary(){
+
+  const data =
+    calculateCart();
+
+  document.getElementById("checkoutSubtotal")
+    .textContent =
+    formatPrice(data.subtotal);
+
+  document.getElementById("checkoutDiscount")
+    .textContent =
+    data.discount
+      ? "-" + formatPrice(data.discount)
+      : "0 ₾";
+
+  document.getElementById("checkoutDelivery")
+    .textContent =
+    data.delivery === 0
+      ? "უფასო"
+      : formatPrice(data.delivery);
+
+  document.getElementById("checkoutTotal")
+    .textContent =
+    formatPrice(data.total);
+}
+
+document
+  .getElementById("checkoutForm")
+  .addEventListener("submit", async function(event){
+
+    event.preventDefault();
+
+    const data =
+      calculateCart();
+
+    if(!data.items.length){
+      showToast("კალათა ცარიელია.","error");
+      return;
+    }
+
+    const button =
+      this.querySelector("button[type='submit']");
+
+    button.disabled = true;
+    button.textContent =
+      "იგზავნება...";
+
+    const customerName =
+      document.getElementById("customerName").value.trim();
+
+    const phone =
+      document.getElementById("customerPhone").value.trim();
+
+    const email =
+      document.getElementById("customerEmail").value.trim();
+
+    const city =
+      document.getElementById("customerCity").value.trim();
+
+    const address =
+      document.getElementById("customerAddress").value.trim();
+
+    const comment =
+      document.getElementById("orderComment").value.trim();
+
+    const deliveryLabel =
+      selectedDelivery === "courier"
+      ? "კურიერი"
+      : "თვითგატანა";
+
+    const productDetails =
+      data.items.map(item => {
+
+        const p = item.product;
+
+        return `
+          <div>
+            <strong>
+              ${escapeHTML(p.name || "პროდუქტი")}
+            </strong>
+            × ${item.quantity}
+            — ${formatPrice(
+              getProductPrice(p) *
+              item.quantity
+            )}
+          </div>
+        `;
+
+      }).join("");
+
+    const orderNumber =
+      "MAK-" +
+      Date.now()
+        .toString()
+        .slice(-8);
+
+    try{
+
+      /*
+        users collection-ში პროფილის შენახვა.
+        თუ Firestore Rules ამას არ დაუშვებს,
+        შეკვეთა მაინც გაგრძელდება.
+      */
+
+      try{
+
+        await db
+          .collection("users")
+          .doc(guestId)
+          .set({
+
+            userId:guestId,
+
+            name:customerName,
+            email:email || "",
+            phone,
+            city,
+            address,
+
+            updatedAt:
+              firebase.firestore.FieldValue.serverTimestamp(),
+
+            createdAt:
+              firebase.firestore.FieldValue.serverTimestamp()
+
+          },{
+            merge:true
+          });
+
+      }catch(userError){
+
+        console.warn(
+          "User profile not saved:",
+          userError
+        );
+      }
+
+      /*
+        OLD ADMIN COMPATIBLE ORDER
+      */
+
+      const order = {
+
+        userId:guestId,
+
+        userEmail:email || "",
+
+        customerName,
+
+        phone,
+
+        address:
+          city
+          ? `${city}, ${address}`
+          : address,
+
+        delivery:deliveryLabel,
+
+        totalPrice:
+          formatPrice(data.total),
+
+        productDetails,
+
+        createdAt:
+          firebase.firestore.FieldValue.serverTimestamp(),
+
+        status:"ახალი",
+
+        orderNumber,
+
+        totalAmount:data.total,
+
+        subtotal:data.subtotal,
+
+        discount:data.discount,
+
+        deliveryFee:data.delivery,
+
+        comment,
+
+        items:data.items.map(item => ({
+
+          productId:item.product.id,
+
+          name:item.product.name || "",
+
+          quantity:item.quantity,
+
+          price:getProductPrice(item.product),
+
+          image:item.product.image || ""
+
+        }))
+
+      };
+
+      const ref =
+        await db
+          .collection("orders")
+          .add(order);
+
+      /*
+        local order history
+      */
+
+      const history =
+        loadJSON(
+          "makasia_orders",
+          []
+        );
+
+      history.unshift({
+
+        id:ref.id,
+
+        orderNumber,
+
+        total:data.total,
+
+        createdAt:Date.now(),
+
+        status:"ახალი",
+
+        items:data.items.map(item => ({
+          name:item.product.name,
+          quantity:item.quantity
+        }))
+
+      });
+
+      localStorage.setItem(
+        "makasia_orders",
+        JSON.stringify(
+          history.slice(0,20)
+        )
+      );
+
+      /*
+        Clear cart
+      */
+
+      cart = [];
+
+      appliedPromo = null;
+
+      saveState();
+      updateCartUI();
+
+      this.reset();
+
+      closeCheckout();
+
+      document.getElementById("successOrderId")
+        .textContent =
+        orderNumber;
+
+      openModal("successModal");
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "შეკვეთის გაგზავნა ვერ მოხერხდა. სცადე თავიდან.",
+        "error"
+      );
+
+    }finally{
+
+      button.disabled = false;
+      button.textContent =
+        "💗 შეკვეთის დადასტურება";
+    }
+
+  });
+
+/* =========================================================
+   PROMO
+========================================================= */
+
+function applyPromo(){
+
+  const input =
+    document.getElementById("promoInput");
+
+  const message =
+    document.getElementById("promoMessage");
+
+  const code =
+    input.value.trim().toUpperCase();
+
+  if(!code){
+
+    message.textContent =
+      "შეიყვანე promo code.";
+
+    message.style.color =
+      "var(--danger)";
+
+    return;
+  }
+
+  const promo =
+    PROMOS[code];
+
+  if(!promo){
+
+    appliedPromo = null;
+
+    message.textContent =
+      "ეს promo code არ არსებობს.";
+
+    message.style.color =
+      "var(--danger)";
+
+    updateCartUI();
+
+    return;
+  }
+
+  const subtotal =
+    calculateCart().subtotal;
+
+  if(subtotal < promo.min){
+
+    message.textContent =
+      `ამ კოდისთვის მინიმუმ ${formatPrice(promo.min)} არის საჭირო.`;
+
+    message.style.color =
+      "var(--warning)";
+
+    return;
+  }
+
+  appliedPromo = {
+    code
+  };
+
+  message.textContent =
+    `✓ ${code} გააქტიურდა — ${promo.value}%`;
+
+  message.style.color =
+    "var(--success)";
+
+  updateCartUI();
+
+  showToast(
+    "Promo code გააქტიურდა 💗",
+    "success"
+  );
+}
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function openProfile(){
+
+  const history =
+    loadJSON(
+      "makasia_orders",
+      []
+    );
+
+  const last =
+    history[0];
+
+  const name =
+    localStorage.getItem(
+      "makasia_customer_name"
+    ) || "სტუმარი";
+
+  document.getElementById("profileName")
+    .textContent = name;
+
+  document.getElementById("profileAvatar")
+    .textContent =
+    name.charAt(0).toUpperCase();
+
+  document.getElementById("profileContent")
+    .innerHTML = `
+
+      <div
+        style="
+          padding:18px;
+          border-radius:18px;
+          background:var(--pink-3);
+        ">
+
+        <div class="section-kicker">
+          ORDER HISTORY
+        </div>
+
+        ${
+          history.length
+          ?
+          `
+          <div style="display:grid;gap:10px;margin-top:12px;">
+
+            ${history.slice(0,8).map(order => `
+
+              <div
+                style="
+                  padding:14px;
+                  border-radius:14px;
+                  background:var(--surface-solid);
+                  border:1px solid var(--border);
+                ">
+
+                <div
+                  style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:10px;
+                  ">
+
+                  <strong style="font-size:11px;">
+                    ${escapeHTML(order.orderNumber)}
+                  </strong>
+
+                  <span
+                    style="
+                      color:var(--pink-dark);
+                      font-size:11px;
+                      font-weight:800;
+                    ">
+                    ${formatPrice(order.total)}
+                  </span>
+
+                </div>
+
+                <div
+                  style="
+                    color:var(--muted);
+                    font-size:9px;
+                    margin-top:7px;
+                  ">
+                  ${new Date(order.createdAt).toLocaleString("ka-GE")}
+                </div>
+
+                <div
+                  style="
+                    color:var(--success);
+                    font-size:9px;
+                    margin-top:5px;
+                    font-weight:800;
+                  ">
+                  ${escapeHTML(order.status || "ახალი")}
+                </div>
+
+              </div>
+
+            `).join("")}
+
+          </div>
+          `
+          :
+          `
+          <p style="color:var(--muted);font-size:11px;margin-top:10px;">
+            ჯერ შეკვეთები არ გაქვს.
+          </p>
+          `
+        }
+
+      </div>
+
+      ${
+        last
+        ?
+        `
+        <button
+          class="secondary-btn full-btn"
+          style="margin-top:12px;"
+          onclick="closeProfile();openCart();">
+          🛒 კალათის ნახვა
+        </button>
+        `
+        :
+        ""
+      }
+
+    `;
+
+  openModal("profileModal");
+}
+
+function closeProfile(){
+  closeModal("profileModal");
+}
+
+/* =========================================================
+   REVIEW
+========================================================= */
+
+function openReviewModal(productId){
+
+  document.getElementById("reviewProductId")
+    .value = productId;
+
+  document.getElementById("reviewForm")
+    .reset();
+
+  document.getElementById("reviewProductId")
+    .value = productId;
+
+  openModal("reviewModal");
+}
+
+function closeReview(){
+  closeModal("reviewModal");
+}
+
+document
+  .getElementById("reviewForm")
+  .addEventListener("submit", async function(event){
+
+    event.preventDefault();
+
+    const productId =
+      document.getElementById("reviewProductId").value;
+
+    const name =
+      document.getElementById("reviewName").value.trim();
+
+    const rating =
+      Number(
+        document.getElementById("reviewRating").value
+      );
+
+    const comment =
+      document.getElementById("reviewComment").value.trim();
+
+    if(!productId || !name || !comment){
+      return;
+    }
+
+    const button =
+      this.querySelector("button");
+
+    button.disabled = true;
+    button.textContent =
+      "იგზავნება...";
+
+    try{
+
+      await db
+        .collection("reviews")
+        .add({
+
+          productId,
+
+          userId:guestId,
+
+          name,
+
+          rating,
+
+          comment,
+
+          status:"pending",
+
+          createdAt:
+            firebase.firestore.FieldValue.serverTimestamp()
+
+        });
+
+      closeReview();
+
+      showToast(
+        "შეფასება გაიგზავნა და ელოდება დადასტურებას 💗",
+        "success"
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "შეფასების გაგზავნა ვერ მოხერხდა.",
+        "error"
+      );
+
+    }finally{
+
+      button.disabled = false;
+      button.textContent =
+        "შეფასების გაგზავნა";
+    }
+
+  });
+
+/* =========================================================
+   DRAWERS
+========================================================= */
+
+function openCart(){
+
+  renderCart();
+
+  document
+    .getElementById("overlay")
+    .classList.add("active");
+
+  document
+    .getElementById("cartDrawer")
+    .classList.add("active");
+}
+
+function closeCart(){
+
+  document
+    .getElementById("cartDrawer")
+    .classList.remove("active");
+
+  if(
+    !document
+      .querySelector(".drawer.active")
+  ){
+    document
+      .getElementById("overlay")
+      .classList.remove("active");
+  }
+}
+
+function openWishlist(){
+
+  renderWishlist();
+
+  document
+    .getElementById("overlay")
+    .classList.add("active");
+
+  document
+    .getElementById("wishlistDrawer")
+    .classList.add("active");
+}
+
+function closeWishlist(){
+
+  document
+    .getElementById("wishlistDrawer")
+    .classList.remove("active");
+
+  if(
+    !document
+      .querySelector(".drawer.active")
+  ){
+    document
+      .getElementById("overlay")
+      .classList.remove("active");
+  }
+}
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id){
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(id){
+
+  document
+    .getElementById(id)
+    .classList.remove("active");
+
+  if(
+    !document
+      .querySelector(".modal-wrap.active") &&
+    !document
+      .querySelector(".drawer.active")
+  ){
+    document.body.style.overflow = "";
+  }
+}
+
+function closeProductModal(){
+  closeModal("productModal");
+}
+
+function closeSuccess(){
+  closeModal("successModal");
+}
+
+function closeAll(){
+
+  document
+    .querySelectorAll(".drawer,.modal-wrap")
+    .forEach(el =>
+      el.classList.remove("active")
+    );
+
+  document
+    .getElementById("overlay")
+    .classList.remove("active");
+
+  document.body.style.overflow = "";
+}
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function toggleTheme(){
+
+  document.documentElement
+    .classList.toggle("dark");
+
+  const dark =
+    document.documentElement
+      .classList.contains("dark");
+
+  localStorage.setItem(
+    "makasia_theme",
+    dark ? "dark" : "light"
+  );
+
+  document.getElementById("themeBtn")
+    .textContent =
+    dark ? "☀️" : "🌙";
+}
+
+function loadTheme(){
+
+  const theme =
+    localStorage.getItem(
+      "makasia_theme"
+    );
+
+  if(theme === "dark"){
+
+    document.documentElement
+      .classList.add("dark");
+
+    document.getElementById("themeBtn")
+      .textContent = "☀️";
+  }
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+  .getElementById("searchInput")
+  .addEventListener(
+    "input",
+    debounce(() => {
+      renderProducts();
+    },180)
+  );
+
+document
+  .getElementById("sortSelect")
+  .addEventListener(
+    "change",
+    renderProducts
+  );
+
+document
+  .getElementById("priceFilter")
+  .addEventListener(
+    "change",
+    renderProducts
+  );
+
+function debounce(fn,delay){
+
+  let timer;
+
+  return function(){
+
+    clearTimeout(timer);
+
+    timer =
+      setTimeout(
+        fn,
+        delay
+      );
+  };
+}
+
+function focusSearch(){
+
+  scrollToProducts();
+
+  setTimeout(() => {
+
+    const input =
+      document.getElementById("searchInput");
+
+    input.focus();
+
+    input.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+
+  },450);
+}
+
+/* =========================================================
+   SALE
+========================================================= */
+
+function getSaleEnd(){
+
+  let end =
+    Number(
+      localStorage.getItem(
+        "makasia_sale_end"
+      )
+    );
+
+  if(!end || end < Date.now()){
+
+    end =
+      Date.now() +
+      48 * 60 * 60 * 1000;
+
+    localStorage.setItem(
+      "makasia_sale_end",
+      end
+    );
+  }
+
+  return end;
+}
+
+function updateCountdown(){
+
+  const diff =
+    Math.max(
+      0,
+      getSaleEnd() -
+      Date.now()
+    );
+
+  const totalSeconds =
+    Math.floor(diff / 1000);
+
+  const days =
+    Math.floor(
+      totalSeconds / 86400
+    );
+
+  const hours =
+    Math.floor(
+      (totalSeconds % 86400) / 3600
+    );
+
+  const minutes =
+    Math.floor(
+      (totalSeconds % 3600) / 60
+    );
+
+  const seconds =
+    totalSeconds % 60;
+
+  document.getElementById("days")
+    .textContent =
+    String(days).padStart(2,"0");
+
+  document.getElementById("hours")
+    .textContent =
+    String(hours).padStart(2,"0");
+
+  document.getElementById("minutes")
+    .textContent =
+    String(minutes).padStart(2,"0");
+
+  document.getElementById("seconds")
+    .textContent =
+    String(seconds).padStart(2,"0");
+}
+
+function showSaleProducts(){
+
+  const saleProducts =
+    products.filter(p =>
+      getDiscount(p) > 0
+    );
+
+  if(!saleProducts.length){
+
+    showToast(
+      "ამჟამად ფასდაკლებული პროდუქტი არ არის."
+    );
+
+    scrollToProducts();
+
+    return;
+  }
+
+  document.getElementById("sortSelect")
+    .value = "discount";
+
+  scrollToProducts();
+
+  renderProducts();
+}
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function scrollHome(){
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+function scrollToProducts(){
+
+  document
+    .getElementById("products")
+    .scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+}
+
+function scrollToSale(){
+
+  document
+    .getElementById("sale")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message,type="default"){
+
+  const container =
+    document.getElementById(
+      "toastContainer"
+    );
+
+  const toast =
+    document.createElement("div");
+
+  toast.className =
+    "toast " + type;
+
+  const icon =
+    type === "success"
+    ? "✓"
+    : type === "error"
+    ? "!"
+    : type === "warning"
+    ? "⚠"
+    : "💗";
+
+  toast.innerHTML = `
+    <strong style="font-size:16px;">
+      ${icon}
+    </strong>
+
+    <span>
+      ${escapeHTML(message)}
+    </span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+
+    toast.style.opacity = "0";
+    toast.style.transform =
+      "translateX(30px)";
+
+    setTimeout(
+      () => toast.remove(),
+      300
+    );
+
+  },2800);
+}
+
+/* =========================================================
+   NEWSLETTER
+========================================================= */
+
+document
+  .getElementById("newsletterForm")
+  .addEventListener("submit",function(event){
+
+    event.preventDefault();
+
+    const email =
+      document
+        .getElementById("newsletterEmail")
+        .value
+        .trim();
+
+    if(!email) return;
+
+    localStorage.setItem(
+      "makasia_newsletter",
+      email
+    );
+
+    this.reset();
+
+    showToast(
+      "შენ წარმატებით გამოიწერე სიახლეები 💗",
+      "success"
+    );
+  });
+
+/* =========================================================
+   SCROLL REVEAL
+========================================================= */
+
+const observer =
+  new IntersectionObserver(
+    entries => {
+
+      entries.forEach(entry => {
+
+        if(entry.isIntersecting){
+
+          entry.target
+            .classList
+            .add("visible");
+
+          observer.unobserve(
+            entry.target
+          );
+        }
+
+      });
+
+    },
+    {
+      threshold:.08
+    }
+  );
+
+document
+  .querySelectorAll(".reveal")
+  .forEach(el =>
+    observer.observe(el)
+  );
+
+/* =========================================================
+   BACK TO TOP
+========================================================= */
+
+window.addEventListener("scroll",() => {
+
+  const button =
+    document.getElementById("backTop");
+
+  if(window.scrollY > 500){
+    button.classList.add("show");
+  }else{
+    button.classList.remove("show");
+  }
+
+});
+
+/* =========================================================
+   URL PRODUCT
+========================================================= */
+
+function checkProductURL(){
+
+  const params =
+    new URLSearchParams(
+      location.search
+    );
+
+  const productId =
+    params.get("product");
+
+  if(productId){
+
+    setTimeout(() => {
+
+      if(
+        products.some(
+          p => p.id === productId
+        )
+      ){
+        openProduct(productId);
+      }
+
+    },1000);
+  }
+}
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if(event.key === "Escape"){
+      closeAll();
+    }
+
+  }
+);
+
+/* =========================================================
+   SAVE CUSTOMER NAME
+========================================================= */
+
+document
+  .getElementById("customerName")
+  .addEventListener(
+    "input",
+    debounce(() => {
+
+      const value =
+        document
+          .getElementById("customerName")
+          .value
+          .trim();
+
+      if(value){
+
+        localStorage.setItem(
+          "makasia_customer_name",
+          value
+        );
+      }
+
+    },300)
+  );
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+async function init(){
+
+  loadTheme();
+
+  updateCartUI();
+
+  updateCountdown();
+
+  setInterval(
+    updateCountdown,
+    1000
+  );
+
+  await Promise.all([
+    loadProducts(),
+    loadReviews()
+  ]);
+
+  renderProducts();
+  renderWishlist();
+  updateCartUI();
+
+  checkProductURL();
+
+  /*
+    Save recently viewed support.
+  */
+
+  window.addEventListener(
+    "beforeunload",
+    saveState
+  );
+}
+
+init();
+
+</script>
+
+</body>
+</html>
