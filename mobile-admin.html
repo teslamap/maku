@@ -1069,6 +1069,41 @@ textarea.form-control{min-height:110px;}
   .mobile-bottom-nav{max-width:620px;left:50%;right:auto;transform:translateX(-50%);border-radius:22px 22px 0 0;}
 }
 
+
+
+/* =========================================================
+   MOBILE SLIDE-OUT MENU
+========================================================= */
+@media (max-width:800px){
+  .sidebar{
+    display:block!important;
+    width:280px!important;
+    transform:translateX(-105%)!important;
+    transition:transform .25s ease!important;
+    box-shadow:12px 0 35px rgba(0,0,0,.22);
+    padding-top:20px!important;
+    z-index:3000!important;
+  }
+  .sidebar.open{
+    transform:translateX(0)!important;
+  }
+  .mobile-menu{
+    display:flex!important;
+    align-items:center;
+    justify-content:center;
+    width:42px!important;
+    height:42px!important;
+    border:none!important;
+    background:#f3f4f6!important;
+    border-radius:11px!important;
+    font-size:22px!important;
+    flex-shrink:0;
+    z-index:3100;
+  }
+  .sidebar.open ~ .main .mobile-menu{
+    display:none!important;
+  }
+}
 </style>
 </head>
 
