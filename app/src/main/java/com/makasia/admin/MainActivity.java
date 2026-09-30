@@ -1,4 +1,4 @@
-package com.makasia.admin;
+package com.makasia.app;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -17,11 +17,7 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
-        webView.loadUrl("file:///android_asset/mobile-index.html");
+        webView.loadUrl("file:///android_asset/mobile-admin.html");
         setContentView(webView);
-    }
-    @Override public void onBackPressed() {
-        WebView v = (WebView) findViewById(android.R.id.content).getRootView().findViewWithTag("web");
-        super.onBackPressed();
     }
 }
