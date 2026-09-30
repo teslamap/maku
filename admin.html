@@ -1,0 +1,4611 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makasia — Admin 2</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, "Noto Sans Georgian", sans-serif;
+      background: #f5f6fa;
+      color: #222;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* =========================
+       LOGIN
+    ========================== */
+
+    #loginSection {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.2), transparent 35%),
+        linear-gradient(135deg, #6c5ce7, #a855f7, #ec4899);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,.97);
+      padding: 35px;
+      border-radius: 24px;
+      box-shadow: 0 25px 70px rgba(0,0,0,.25);
+      text-align: center;
+    }
+
+    .login-logo {
+      width: 75px;
+      height: 75px;
+      margin: 0 auto 18px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      background: linear-gradient(135deg,#6c5ce7,#ec4899);
+      color: white;
+    }
+
+    .login-card h1 {
+      margin-bottom: 8px;
+      font-size: 28px;
+    }
+
+    .login-card p {
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .login-input:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124,58,237,.1);
+    }
+
+    .login-btn {
+      width: 100%;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      background: linear-gradient(135deg,#6c5ce7,#ec4899);
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .login-error {
+      color: #dc2626;
+      min-height: 22px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    /* =========================
+       APP
+    ========================== */
+
+    #adminSection {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: #171522;
+      color: white;
+      padding: 20px 15px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 10px 25px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 20px;
+    }
+
+    .brand-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 13px;
+      background: linear-gradient(135deg,#7c3aed,#ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+    }
+
+    .brand-text strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .brand-text span {
+      display: block;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 3px;
+    }
+
+    .nav-title {
+      color: #777;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin: 20px 10px 8px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #aaa;
+      padding: 13px 12px;
+      border-radius: 11px;
+      text-align: left;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: .2s;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: rgba(124,58,237,.22);
+      color: white;
+    }
+
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+    }
+
+    .sidebar-bottom {
+      margin-top: 30px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding-top: 15px;
+    }
+
+    .store-btn {
+      color: #a78bfa;
+    }
+
+    .logout-btn {
+      color: #fca5a5;
+    }
+
+    /* =========================
+       MAIN
+    ========================== */
+
+    .main {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 72px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+
+    .topbar-title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-badge {
+      padding: 8px 12px;
+      background: #f3e8ff;
+      color: #7e22ce;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .mobile-menu {
+      display: none;
+      border: none;
+      background: #f3f4f6;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      font-size: 20px;
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* =========================
+       DASHBOARD
+    ========================== */
+
+    .welcome {
+      margin-bottom: 25px;
+    }
+
+    .welcome h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .welcome p {
+      color: #777;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 17px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,.03);
+    }
+
+    .stat-label {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      background: #f3f4f6;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 17px;
+      padding: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.03);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 10px;
+    }
+
+    .panel-header h2 {
+      font-size: 18px;
+    }
+
+    .small-muted {
+      color: #888;
+      font-size: 13px;
+    }
+
+    /* =========================
+       TABLES
+    ========================== */
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    th,
+    td {
+      padding: 13px 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th {
+      color: #777;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fafafa;
+    }
+
+    tr:hover td {
+      background: #fcfcff;
+    }
+
+    .product-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 200px;
+    }
+
+    .product-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #eee;
+      flex-shrink: 0;
+    }
+
+    .no-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .product-name {
+      font-weight: 700;
+    }
+
+    .product-category {
+      color: #888;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    /* =========================
+       TOOLBAR
+    ========================== */
+
+    .toolbar {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 17px;
+      padding: 15px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 11px;
+    }
+
+    .filter-select {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      outline: none;
+      min-width: 150px;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn,
+    .success-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .primary-btn {
+      color: white;
+      background: linear-gradient(135deg,#6d28d9,#9333ea);
+    }
+
+    .secondary-btn {
+      background: #f3f4f6;
+      color: #333;
+    }
+
+    .danger-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .success-btn {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .danger-btn:hover,
+    .success-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* =========================
+       BADGES
+    ========================== */
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-yellow {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-purple {
+      background: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .badge-gray {
+      background: #f3f4f6;
+      color: #555;
+    }
+
+    /* =========================
+       ACTIONS
+    ========================== */
+
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .icon-btn {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 9px;
+      background: #f3f4f6;
+      font-size: 15px;
+    }
+
+    .icon-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .icon-btn.delete:hover {
+      background: #fee2e2;
+    }
+
+    /* =========================
+       FORM
+    ========================== */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #444;
+    }
+
+    .form-control {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 12px;
+      outline: none;
+      background: white;
+    }
+
+    .form-control:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124,58,237,.08);
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .image-preview {
+      width: 110px;
+      height: 110px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #f3f4f6;
+      display: none;
+      margin-top: 8px;
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .upload-status {
+      color: #7c3aed;
+      font-size: 12px;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* =========================
+       ORDER
+    ========================== */
+
+    .order-products {
+      max-width: 320px;
+      line-height: 1.6;
+      font-size: 12px;
+    }
+
+    .status-select {
+      padding: 7px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: white;
+      font-size: 12px;
+      outline: none;
+    }
+
+    /* =========================
+       REVIEW
+    ========================== */
+
+    .review-text {
+      max-width: 350px;
+      line-height: 1.5;
+      color: #555;
+    }
+
+    .stars {
+      color: #f59e0b;
+      letter-spacing: 1px;
+    }
+
+    /* =========================
+       EMPTY
+    ========================== */
+
+    .empty {
+      padding: 50px 20px;
+      text-align: center;
+      color: #888;
+    }
+
+    .empty-icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    /* =========================
+       MODAL
+    ========================== */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.3);
+    }
+
+    .modal.small {
+      max-width: 450px;
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+    }
+
+    .close-modal {
+      width: 35px;
+      height: 35px;
+      border: none;
+      background: #f3f4f6;
+      border-radius: 9px;
+      font-size: 18px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* =========================
+       TOAST
+    ========================== */
+
+    #toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #171522;
+      color: white;
+      padding: 14px 18px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .3s;
+      z-index: 5000;
+      max-width: 350px;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    #toast.success {
+      background: #166534;
+    }
+
+    #toast.error {
+      background: #991b1b;
+    }
+
+    /* =========================
+       LOADING
+    ========================== */
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #888;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid #ddd;
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* =========================
+       MOBILE
+    ========================== */
+
+    @media (max-width: 1100px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: .25s;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .topbar {
+        padding: 0 15px;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .topbar-title {
+        font-size: 18px;
+      }
+
+      .admin-badge {
+        display: none;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .search-box {
+        min-width: 100%;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+
+      .price-row {
+        grid-template-columns: 1fr;
+      }
+
+      .login-card {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     LOGIN
+========================================================= -->
+
+<section id="loginSection">
+
+  <div class="login-card">
+
+    <div class="login-logo">🔐</div>
+
+    <h1>Makasia Admin 2</h1>
+    <p>მართვის პანელში შესვლა</p>
+
+    <input
+      type="password"
+      id="adminPassword"
+      class="login-input"
+      placeholder="ადმინ პაროლი"
+      autocomplete="current-password"
+    >
+
+    <button id="loginBtn" class="login-btn">
+      შესვლა
+    </button>
+
+    <div id="loginError" class="login-error"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     ADMIN APP
+========================================================= -->
+
+<section id="adminSection">
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar" id="sidebar">
+
+      <div class="brand">
+        <div class="brand-icon">✨</div>
+
+        <div class="brand-text">
+          <strong>Makasia</strong>
+          <span>Admin 2 Panel</span>
+        </div>
+      </div>
+
+      <div class="nav-title">მართვა</div>
+
+      <button class="nav-btn active" data-page="dashboardPage">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </button>
+
+      <button class="nav-btn" data-page="productsPage">
+        <span class="nav-icon">📦</span>
+        პროდუქტები
+      </button>
+
+      <button class="nav-btn" data-page="ordersPage">
+        <span class="nav-icon">🛒</span>
+        შეკვეთები
+      </button>
+
+      <button class="nav-btn" data-page="usersPage">
+        <span class="nav-icon">👥</span>
+        მომხმარებლები
+      </button>
+
+      <button class="nav-btn" data-page="reviewsPage">
+        <span class="nav-icon">⭐</span>
+        Reviews
+      </button>
+
+      <div class="nav-title">სხვა</div>
+
+      <button class="nav-btn store-btn" id="openStoreBtn">
+        <span class="nav-icon">🌐</span>
+        მაღაზიის გახსნა
+      </button>
+
+      <div class="sidebar-bottom">
+
+        <button class="nav-btn logout-btn" id="adminLogout">
+          <span class="nav-icon">🚪</span>
+          გასვლა
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+      <header class="topbar">
+
+        <div style="display:flex;align-items:center;gap:12px;">
+
+          <button class="mobile-menu" id="mobileMenu">
+            ☰
+          </button>
+
+          <div class="topbar-title" id="topbarTitle">
+            Dashboard
+          </div>
+
+        </div>
+
+        <div class="topbar-right">
+          <span class="admin-badge">
+            🛡️ Administrator
+          </span>
+        </div>
+
+      </header>
+
+
+      <div class="content">
+
+        <!-- =================================================
+             DASHBOARD
+        ================================================== -->
+
+        <section class="page active" id="dashboardPage">
+
+          <div class="welcome">
+            <h1>გამარჯობა 👋</h1>
+            <p>აქედან მართავ Makasia-ს ონლაინ მაღაზიას.</p>
+          </div>
+
+
+          <div class="stats-grid">
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">პროდუქტები</div>
+                <div class="stat-value" id="statProducts">0</div>
+              </div>
+              <div class="stat-icon">📦</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">შეკვეთები</div>
+                <div class="stat-value" id="statOrders">0</div>
+              </div>
+              <div class="stat-icon">🛒</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">მომხმარებლები</div>
+                <div class="stat-value" id="statUsers">0</div>
+              </div>
+              <div class="stat-icon">👥</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">შემოსავალი</div>
+                <div class="stat-value" id="statRevenue">0 ₾</div>
+              </div>
+              <div class="stat-icon">💰</div>
+            </div>
+
+          </div>
+
+
+          <div class="dashboard-grid">
+
+            <!-- recent orders -->
+
+            <div class="panel">
+
+              <div class="panel-header">
+                <h2>🛒 ბოლო შეკვეთები</h2>
+                <button
+                  class="secondary-btn"
+                  onclick="showPage('ordersPage')"
+                >
+                  ყველას ნახვა
+                </button>
+              </div>
+
+              <div id="dashboardOrders">
+                <div class="loading">
+                  <div class="spinner"></div>
+                  იტვირთება...
+                </div>
+              </div>
+
+            </div>
+
+
+            <!-- low stock -->
+
+            <div class="panel">
+
+              <div class="panel-header">
+                <h2>⚠️ დაბალი მარაგი</h2>
+
+                <button
+                  class="secondary-btn"
+                  onclick="showPage('productsPage')"
+                >
+                  პროდუქტები
+                </button>
+              </div>
+
+              <div id="lowStockList">
+                <div class="empty">
+                  <div class="empty-icon">📦</div>
+                  მონაცემები იტვირთება...
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PRODUCTS
+        ================================================== -->
+
+        <section class="page" id="productsPage">
+
+          <div class="panel-header">
+            <div>
+              <h2 style="font-size:26px;">📦 პროდუქტები</h2>
+              <div class="small-muted">
+                პროდუქციის დამატება, რედაქტირება და წაშლა
+              </div>
+            </div>
+
+            <button class="primary-btn" id="openAddProduct">
+              ➕ ახალი პროდუქტი
+            </button>
+          </div>
+
+
+          <div class="toolbar">
+
+            <div class="search-box">
+
+              <span class="search-icon">🔎</span>
+
+              <input
+                type="text"
+                id="productSearch"
+                placeholder="მოძებნე პროდუქტი..."
+              >
+
+            </div>
+
+            <select id="productCategoryFilter" class="filter-select">
+              <option value="">ყველა კატეგორია</option>
+            </select>
+
+            <select id="productStockFilter" class="filter-select">
+              <option value="">ყველა მარაგი</option>
+              <option value="available">მარაგშია</option>
+              <option value="low">დაბალი მარაგი</option>
+              <option value="out">ამოიწურა</option>
+            </select>
+
+          </div>
+
+
+          <div class="panel">
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+                  <tr>
+                    <th>პროდუქტი</th>
+                    <th>ფასი</th>
+                    <th>კატეგორია</th>
+                    <th>მარაგი</th>
+                    <th>სტატუსი</th>
+                    <th>მოქმედება</th>
+                  </tr>
+                </thead>
+
+                <tbody id="productsTableBody">
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ORDERS
+        ================================================== -->
+
+        <section class="page" id="ordersPage">
+
+          <div class="panel-header">
+
+            <div>
+              <h2 style="font-size:26px;">🛒 შეკვეთები</h2>
+              <div class="small-muted">
+                მომხმარებლების შეკვეთების მართვა
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="toolbar">
+
+            <div class="search-box">
+
+              <span class="search-icon">🔎</span>
+
+              <input
+                type="text"
+                id="orderSearch"
+                placeholder="მოძებნე სახელი, ტელეფონი..."
+              >
+
+            </div>
+
+            <select id="orderStatusFilter" class="filter-select">
+              <option value="">ყველა სტატუსი</option>
+              <option value="ახალი">ახალი</option>
+              <option value="დადასტურებული">დადასტურებული</option>
+              <option value="მზადდება">მზადდება</option>
+              <option value="იგზავნება">იგზავნება</option>
+              <option value="ჩაბარდა">ჩაბარდა</option>
+              <option value="გაუქმებული">გაუქმებული</option>
+            </select>
+
+          </div>
+
+
+          <div class="panel">
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+                    <th>თარიღი</th>
+                    <th>მომხმარებელი</th>
+                    <th>კონტაქტი</th>
+                    <th>პროდუქტები</th>
+                    <th>მიტანა</th>
+                    <th>ჯამი</th>
+                    <th>სტატუსი</th>
+                    <th>მოქმედება</th>
+                  </tr>
+
+                </thead>
+
+                <tbody id="ordersTableBody">
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             USERS
+        ================================================== -->
+
+        <section class="page" id="usersPage">
+
+          <div class="panel-header">
+
+            <div>
+              <h2 style="font-size:26px;">👥 მომხმარებლები</h2>
+              <div class="small-muted">
+                რეგისტრირებული მომხმარებლები
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="toolbar">
+
+            <div class="search-box">
+
+              <span class="search-icon">🔎</span>
+
+              <input
+                type="text"
+                id="userSearch"
+                placeholder="მოძებნე მომხმარებელი..."
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="panel">
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+                    <th>მომხმარებელი</th>
+                    <th>Email</th>
+                    <th>ტელეფონი</th>
+                    <th>მისამართი</th>
+                    <th>რეგისტრაცია</th>
+                  </tr>
+
+                </thead>
+
+                <tbody id="usersTableBody">
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             REVIEWS
+        ================================================== -->
+
+        <section class="page" id="reviewsPage">
+
+          <div class="panel-header">
+
+            <div>
+              <h2 style="font-size:26px;">⭐ Reviews</h2>
+              <div class="small-muted">
+                შეფასებების მართვა და მოდერაცია
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="toolbar">
+
+            <div class="search-box">
+
+              <span class="search-icon">🔎</span>
+
+              <input
+                type="text"
+                id="reviewSearch"
+                placeholder="მოძებნე review..."
+              >
+
+            </div>
+
+            <select id="reviewStatusFilter" class="filter-select">
+              <option value="">ყველა</option>
+              <option value="approved">დადასტურებული</option>
+              <option value="pending">მოლოდინში</option>
+              <option value="rejected">უარყოფილი</option>
+            </select>
+
+          </div>
+
+
+          <div class="panel">
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+                    <th>მომხმარებელი</th>
+                    <th>პროდუქტი</th>
+                    <th>შეფასება</th>
+                    <th>ტექსტი</th>
+                    <th>სტატუსი</th>
+                    <th>მოქმედება</th>
+                  </tr>
+
+                </thead>
+
+                <tbody id="reviewsTableBody">
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     PRODUCT MODAL
+========================================================= -->
+
+<div class="modal-overlay" id="productModal">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h2 id="productModalTitle">
+        ➕ ახალი პროდუქტი
+      </h2>
+
+      <button class="close-modal" data-close="productModal">
+        ✕
+      </button>
+
+    </div>
+
+
+    <form id="productForm">
+
+      <div class="modal-body">
+
+        <input
+          type="hidden"
+          id="editProductId"
+        >
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>პროდუქტის სახელი *</label>
+
+            <input
+              type="text"
+              id="prodName"
+              class="form-control"
+              placeholder="მაგ: შავი მაისური"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>კატეგორია</label>
+
+            <input
+              type="text"
+              id="prodCategory"
+              class="form-control"
+              placeholder="მაგ: მაისურები"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>ფასი *</label>
+
+            <input
+              type="number"
+              id="prodPrice"
+              class="form-control"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>ძველი ფასი</label>
+
+            <input
+              type="number"
+              id="prodOldPrice"
+              class="form-control"
+              step="0.01"
+              min="0"
+              placeholder="მაგ: 79"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>მარაგი</label>
+
+            <input
+              type="number"
+              id="prodStock"
+              class="form-control"
+              min="0"
+              step="1"
+              placeholder="მაგ: 20"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>ფერი</label>
+
+            <input
+              type="text"
+              id="prodColor"
+              class="form-control"
+              placeholder="მაგ: შავი"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>ზომა</label>
+
+            <input
+              type="text"
+              id="prodSize"
+              class="form-control"
+              placeholder="მაგ: S, M, L, XL"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>ბეჯი / Label</label>
+
+            <select id="prodBadge" class="form-control">
+
+              <option value="">არ აქვს</option>
+              <option value="ახალი">ახალი</option>
+              <option value="ტოპი">ტოპი</option>
+              <option value="ფასდაკლება">ფასდაკლება</option>
+              <option value="ბესტსელერი">ბესტსელერი</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group full">
+
+            <label>აღწერა</label>
+
+            <textarea
+              id="prodDescription"
+              class="form-control"
+              placeholder="პროდუქტის აღწერა..."
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group full">
+
+            <label>პროდუქტის სურათი</label>
+
+            <input
+              type="file"
+              id="prodImageFile"
+              class="form-control"
+              accept="image/*"
+            >
+
+            <div
+              id="uploadStatus"
+              class="upload-status"
+            ></div>
+
+            <img
+              id="imagePreview"
+              class="image-preview"
+              alt="Preview"
+            >
+
+            <input
+              type="hidden"
+              id="prodImage"
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>მეორე სურათის URL</label>
+
+            <input
+              type="url"
+              id="prodImage2"
+              class="form-control"
+              placeholder="https://..."
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>პროდუქტის სტატუსი</label>
+
+            <select id="prodStatus" class="form-control">
+
+              <option value="active">აქტიური</option>
+              <option value="hidden">დამალული</option>
+              <option value="draft">Draft</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          data-close="productModal"
+        >
+          გაუქმება
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+          id="saveProductBtn"
+        >
+          💾 შენახვა
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     ORDER MODAL
+========================================================= -->
+
+<div class="modal-overlay" id="orderModal">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h2>🛒 შეკვეთის დეტალები</h2>
+
+      <button class="close-modal" data-close="orderModal">
+        ✕
+      </button>
+
+    </div>
+
+    <div class="modal-body" id="orderDetails">
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        class="secondary-btn"
+        data-close="orderModal"
+      >
+        დახურვა
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     CONFIRM MODAL
+========================================================= -->
+
+<div class="modal-overlay" id="confirmModal">
+
+  <div class="modal small">
+
+    <div class="modal-header">
+
+      <h2>⚠️ დადასტურება</h2>
+
+      <button class="close-modal" data-close="confirmModal">
+        ✕
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <p id="confirmText">
+        ნამდვილად გინდა წაშლა?
+      </p>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        class="secondary-btn"
+        data-close="confirmModal"
+      >
+        არა
+      </button>
+
+      <button
+        class="danger-btn"
+        id="confirmYes"
+      >
+        დიახ, წაშლა
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div id="toast"></div>
+
+
+<script>
+/* ============================================================
+   FIREBASE CONFIG
+============================================================ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuZpWaZFY18eyJNOMjFap2XVTr6D0cMyE",
+  authDomain: "makasia.firebaseapp.com",
+  projectId: "makasia",
+  storageBucket: "makasia.firebasestorage.app",
+  messagingSenderId: "51102698357",
+  appId: "1:51102698357:web:59f62a3c8e76663947a13c",
+  measurementId: "G-PJM63G16X4"
+};
+
+
+/* ============================================================
+   FIREBASE INIT
+============================================================ */
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+
+
+/* ============================================================
+   ADMIN LOGIN
+============================================================ */
+
+/*
+   ზუსტად ძველი admin-ის სტილი.
+   Firebase Authentication არ გამოიყენება.
+*/
+
+const ADMIN_SECRET_PASSWORD = "MakasiaAdmin2026!";
+
+const loginSection = document.getElementById("loginSection");
+const adminSection = document.getElementById("adminSection");
+const loginBtn = document.getElementById("loginBtn");
+const adminLogout = document.getElementById("adminLogout");
+const loginError = document.getElementById("loginError");
+const adminPassword = document.getElementById("adminPassword");
+
+
+function enterAdmin() {
+
+  loginSection.style.display = "none";
+  adminSection.style.display = "block";
+
+  loadAllData();
+
+}
+
+
+function checkAdminSession() {
+
+  if (sessionStorage.getItem("isAdminLoggedIn") === "true") {
+
+    enterAdmin();
+
+  } else {
+
+    loginSection.style.display = "flex";
+    adminSection.style.display = "none";
+
+  }
+
+}
+
+
+loginBtn.addEventListener("click", () => {
+
+  const password = adminPassword.value;
+
+  if (password === ADMIN_SECRET_PASSWORD) {
+
+    sessionStorage.setItem(
+      "isAdminLoggedIn",
+      "true"
+    );
+
+    loginError.textContent = "";
+
+    enterAdmin();
+
+  } else {
+
+    loginError.textContent = "არასწორი პაროლი!";
+
+  }
+
+});
+
+
+adminPassword.addEventListener("keydown", e => {
+
+  if (e.key === "Enter") {
+    loginBtn.click();
+  }
+
+});
+
+
+adminLogout.addEventListener("click", () => {
+
+  sessionStorage.removeItem("isAdminLoggedIn");
+
+  adminSection.style.display = "none";
+  loginSection.style.display = "flex";
+
+  adminPassword.value = "";
+  loginError.textContent = "";
+
+});
+
+
+/* ============================================================
+   CLOUDINARY
+============================================================ */
+
+const CLOUDINARY_CLOUD_NAME = "khhf8rvl";
+const CLOUDINARY_UPLOAD_PRESET = "makasia";
+
+
+async function uploadImage(file) {
+
+  if (!file) return "";
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append(
+    "upload_preset",
+    CLOUDINARY_UPLOAD_PRESET
+  );
+
+  const url =
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Cloudinary-ზე სურათის ატვირთვა ვერ მოხერხდა."
+    );
+
+  }
+
+  const data = await response.json();
+
+  return data.secure_url || data.url || "";
+
+}
+
+
+/* ============================================================
+   GLOBAL DATA
+============================================================ */
+
+let products = [];
+let orders = [];
+let users = [];
+let reviews = [];
+
+let unsubscribeProducts = null;
+let unsubscribeOrders = null;
+let unsubscribeUsers = null;
+let unsubscribeReviews = null;
+
+let pendingDeleteAction = null;
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+let toastTimer = null;
+
+
+function showToast(message, type = "success") {
+
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+
+  toast.className = "";
+
+  toast.classList.add("show");
+
+  if (type === "success") {
+    toast.classList.add("success");
+  }
+
+  if (type === "error") {
+    toast.classList.add("error");
+  }
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+
+}
+
+
+/* ============================================================
+   UTILS
+============================================================ */
+
+function escapeHTML(value) {
+
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+function getTimestampValue(timestamp) {
+
+  if (!timestamp) return null;
+
+  if (
+    typeof timestamp.toDate === "function"
+  ) {
+    return timestamp.toDate();
+  }
+
+  if (timestamp.seconds) {
+    return new Date(
+      timestamp.seconds * 1000
+    );
+  }
+
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+
+  return null;
+
+}
+
+
+function formatDate(timestamp) {
+
+  const date = getTimestampValue(timestamp);
+
+  if (!date) {
+    return "—";
+  }
+
+  return date.toLocaleString(
+    "ka-GE",
+    {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+
+}
+
+
+function getPriceNumber(value) {
+
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (!value) return 0;
+
+  const number = parseFloat(
+    String(value)
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "")
+  );
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+
+}
+
+
+function formatPrice(value) {
+
+  return `${getPriceNumber(value).toFixed(2)} ₾`;
+
+}
+
+
+function getStock(product) {
+
+  const stock = Number(product.stock);
+
+  if (!Number.isFinite(stock)) {
+    return 0;
+  }
+
+  return stock;
+
+}
+
+
+function getStatusBadge(status) {
+
+  switch (status) {
+
+    case "ახალი":
+      return `<span class="badge badge-blue">ახალი</span>`;
+
+    case "დადასტურებული":
+      return `<span class="badge badge-purple">დადასტურებული</span>`;
+
+    case "მზადდება":
+      return `<span class="badge badge-yellow">მზადდება</span>`;
+
+    case "იგზავნება":
+      return `<span class="badge badge-blue">იგზავნება</span>`;
+
+    case "ჩაბარდა":
+      return `<span class="badge badge-green">ჩაბარდა</span>`;
+
+    case "გაუქმებული":
+      return `<span class="badge badge-red">გაუქმებული</span>`;
+
+    default:
+      return `<span class="badge badge-gray">${escapeHTML(status || "უცნობი")}</span>`;
+
+  }
+
+}
+
+
+function getProductStatusBadge(status) {
+
+  if (status === "hidden") {
+    return `<span class="badge badge-gray">დამალული</span>`;
+  }
+
+  if (status === "draft") {
+    return `<span class="badge badge-yellow">Draft</span>`;
+  }
+
+  return `<span class="badge badge-green">აქტიური</span>`;
+
+}
+
+
+/* ============================================================
+   LOAD ALL DATA
+============================================================ */
+
+function loadAllData() {
+
+  loadProducts();
+  loadOrders();
+  loadUsers();
+  loadReviews();
+
+}
+
+
+/* ============================================================
+   PRODUCTS
+============================================================ */
+
+function loadProducts() {
+
+  if (unsubscribeProducts) {
+    unsubscribeProducts();
+  }
+
+  unsubscribeProducts = db
+    .collection("products")
+    .onSnapshot(
+      snapshot => {
+
+        products = [];
+
+        snapshot.forEach(doc => {
+
+          products.push({
+            id: doc.id,
+            ...doc.data()
+          });
+
+        });
+
+        products.sort((a,b) => {
+
+          const aDate =
+            getTimestampValue(a.createdAt)?.getTime() || 0;
+
+          const bDate =
+            getTimestampValue(b.createdAt)?.getTime() || 0;
+
+          return bDate - aDate;
+
+        });
+
+        renderProducts();
+        updateProductCategories();
+        updateDashboard();
+
+      },
+      error => {
+
+        console.error(
+          "Products error:",
+          error
+        );
+
+        showToast(
+          "პროდუქტების ჩატვირთვის შეცდომა: " + error.message,
+          "error"
+        );
+
+      }
+    );
+
+}
+
+
+function updateProductCategories() {
+
+  const select =
+    document.getElementById(
+      "productCategoryFilter"
+    );
+
+  if (!select) return;
+
+  const current = select.value;
+
+  const categories = [
+    ...new Set(
+      products
+        .map(p => p.category)
+        .filter(Boolean)
+    )
+  ].sort();
+
+  select.innerHTML =
+    `<option value="">ყველა კატეგორია</option>` +
+    categories
+      .map(
+        category =>
+          `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`
+      )
+      .join("");
+
+  select.value = current;
+
+}
+
+
+function getFilteredProducts() {
+
+  const search =
+    document.getElementById(
+      "productSearch"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  const category =
+    document.getElementById(
+      "productCategoryFilter"
+    ).value;
+
+  const stockFilter =
+    document.getElementById(
+      "productStockFilter"
+    ).value;
+
+  return products.filter(product => {
+
+    const matchesSearch =
+      !search ||
+      String(product.name || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(product.category || "")
+        .toLowerCase()
+        .includes(search);
+
+    const matchesCategory =
+      !category ||
+      product.category === category;
+
+    const stock = getStock(product);
+
+    let matchesStock = true;
+
+    if (stockFilter === "available") {
+      matchesStock = stock > 5;
+    }
+
+    if (stockFilter === "low") {
+      matchesStock = stock > 0 && stock <= 5;
+    }
+
+    if (stockFilter === "out") {
+      matchesStock = stock <= 0;
+    }
+
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesStock
+    );
+
+  });
+
+}
+
+
+function renderProducts() {
+
+  const tbody =
+    document.getElementById(
+      "productsTableBody"
+    );
+
+  const filtered =
+    getFilteredProducts();
+
+  if (!filtered.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="empty">
+            <div class="empty-icon">📦</div>
+            პროდუქტი ვერ მოიძებნა
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  tbody.innerHTML =
+    filtered
+      .map(product => {
+
+        const stock =
+          getStock(product);
+
+        let stockBadge;
+
+        if (stock <= 0) {
+          stockBadge =
+            `<span class="badge badge-red">ამოიწურა</span>`;
+        }
+        else if (stock <= 5) {
+          stockBadge =
+            `<span class="badge badge-yellow">${stock} ცალი</span>`;
+        }
+        else {
+          stockBadge =
+            `<span class="badge badge-green">${stock} ცალი</span>`;
+        }
+
+        const image =
+          product.image ||
+          product.imageUrl ||
+          "";
+
+        const imageHTML = image
+          ? `<img class="product-img" src="${escapeHTML(image)}" alt="">`
+          : `<div class="product-img no-image">📦</div>`;
+
+
+        const oldPrice =
+          getPriceNumber(product.oldPrice);
+
+        const currentPrice =
+          getPriceNumber(product.price);
+
+        const priceHTML =
+          oldPrice > currentPrice
+            ? `
+              <strong>${formatPrice(currentPrice)}</strong>
+              <br>
+              <del style="color:#999;font-size:11px;">
+                ${formatPrice(oldPrice)}
+              </del>
+            `
+            : `<strong>${formatPrice(currentPrice)}</strong>`;
+
+
+        return `
+          <tr>
+
+            <td>
+
+              <div class="product-cell">
+
+                ${imageHTML}
+
+                <div>
+
+                  <div class="product-name">
+                    ${escapeHTML(product.name || "უსახელო")}
+                  </div>
+
+                  <div class="product-category">
+                    ${escapeHTML(product.badge || product.color || "")}
+                  </div>
+
+                </div>
+
+              </div>
+
+            </td>
+
+            <td>
+              ${priceHTML}
+            </td>
+
+            <td>
+              ${escapeHTML(product.category || "—")}
+            </td>
+
+            <td>
+              ${stockBadge}
+            </td>
+
+            <td>
+              ${getProductStatusBadge(product.status)}
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="icon-btn"
+                  title="რედაქტირება"
+                  onclick="editProduct('${product.id}')"
+                >
+                  ✏️
+                </button>
+
+                <button
+                  class="icon-btn delete"
+                  title="წაშლა"
+                  onclick="confirmDeleteProduct('${product.id}')"
+                >
+                  🗑️
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* ============================================================
+   PRODUCT MODAL
+============================================================ */
+
+function openProductModal(product = null) {
+
+  document
+    .getElementById("productModal")
+    .classList.add("show");
+
+
+  const title =
+    document.getElementById(
+      "productModalTitle"
+    );
+
+
+  if (product) {
+
+    title.textContent =
+      "✏️ პროდუქტის რედაქტირება";
+
+    document.getElementById(
+      "editProductId"
+    ).value = product.id;
+
+    document.getElementById(
+      "prodName"
+    ).value = product.name || "";
+
+    document.getElementById(
+      "prodPrice"
+    ).value = getPriceNumber(product.price) || "";
+
+    document.getElementById(
+      "prodOldPrice"
+    ).value = getPriceNumber(product.oldPrice) || "";
+
+    document.getElementById(
+      "prodCategory"
+    ).value = product.category || "";
+
+    document.getElementById(
+      "prodStock"
+    ).value = getStock(product);
+
+    document.getElementById(
+      "prodColor"
+    ).value = product.color || "";
+
+    document.getElementById(
+      "prodSize"
+    ).value = product.size || "";
+
+    document.getElementById(
+      "prodBadge"
+    ).value = product.badge || "";
+
+    document.getElementById(
+      "prodDescription"
+    ).value = product.description || "";
+
+    document.getElementById(
+      "prodImage"
+    ).value =
+      product.image ||
+      product.imageUrl ||
+      "";
+
+    document.getElementById(
+      "prodImage2"
+    ).value = product.image2 || "";
+
+    document.getElementById(
+      "prodStatus"
+    ).value =
+      product.status || "active";
+
+
+    const preview =
+      document.getElementById(
+        "imagePreview"
+      );
+
+    if (
+      product.image ||
+      product.imageUrl
+    ) {
+
+      preview.src =
+        product.image ||
+        product.imageUrl;
+
+      preview.classList.add("show");
+
+    } else {
+
+      preview.src = "";
+      preview.classList.remove("show");
+
+    }
+
+  }
+  else {
+
+    title.textContent =
+      "➕ ახალი პროდუქტი";
+
+    document
+      .getElementById("productForm")
+      .reset();
+
+    document.getElementById(
+      "editProductId"
+    ).value = "";
+
+    document.getElementById(
+      "prodStock"
+    ).value = 0;
+
+    document.getElementById(
+      "prodStatus"
+    ).value = "active";
+
+    document.getElementById(
+      "imagePreview"
+    ).classList.remove("show");
+
+    document.getElementById(
+      "uploadStatus"
+    ).textContent = "";
+
+  }
+
+}
+
+
+function closeModal(id) {
+
+  const modal =
+    document.getElementById(id);
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
+
+}
+
+
+document
+  .getElementById("openAddProduct")
+  .addEventListener(
+    "click",
+    () => openProductModal()
+  );
+
+
+document
+  .getElementById("prodImageFile")
+  .addEventListener(
+    "change",
+    e => {
+
+      const file =
+        e.target.files[0];
+
+      if (!file) return;
+
+      const preview =
+        document.getElementById(
+          "imagePreview"
+        );
+
+      preview.src =
+        URL.createObjectURL(file);
+
+      preview.classList.add("show");
+
+    }
+  );
+
+
+document
+  .getElementById("productForm")
+  .addEventListener(
+    "submit",
+    saveProduct
+  );
+
+
+async function saveProduct(e) {
+
+  e.preventDefault();
+
+  const saveBtn =
+    document.getElementById(
+      "saveProductBtn"
+    );
+
+  const editId =
+    document.getElementById(
+      "editProductId"
+    ).value;
+
+
+  const name =
+    document.getElementById(
+      "prodName"
+    ).value.trim();
+
+  const price =
+    getPriceNumber(
+      document.getElementById(
+        "prodPrice"
+      ).value
+    );
+
+  const oldPrice =
+    getPriceNumber(
+      document.getElementById(
+        "prodOldPrice"
+      ).value
+    );
+
+  const category =
+    document.getElementById(
+      "prodCategory"
+    ).value.trim();
+
+  const stock =
+    Number(
+      document.getElementById(
+        "prodStock"
+      ).value
+    ) || 0;
+
+  const color =
+    document.getElementById(
+      "prodColor"
+    ).value.trim();
+
+  const size =
+    document.getElementById(
+      "prodSize"
+    ).value.trim();
+
+  const badge =
+    document.getElementById(
+      "prodBadge"
+    ).value;
+
+  const description =
+    document.getElementById(
+      "prodDescription"
+    ).value.trim();
+
+  let image =
+    document.getElementById(
+      "prodImage"
+    ).value.trim();
+
+  const image2 =
+    document.getElementById(
+      "prodImage2"
+    ).value.trim();
+
+  const status =
+    document.getElementById(
+      "prodStatus"
+    ).value;
+
+
+  if (!name) {
+
+    showToast(
+      "პროდუქტის სახელი აუცილებელია.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (price < 0) {
+
+    showToast(
+      "ფასი არასწორია.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    saveBtn.disabled = true;
+    saveBtn.textContent =
+      "⏳ ინახება...";
+
+
+    const file =
+      document.getElementById(
+        "prodImageFile"
+      ).files[0];
+
+
+    if (file) {
+
+      document.getElementById(
+        "uploadStatus"
+      ).textContent =
+        "🖼️ სურათი იტვირთება...";
+
+      image =
+        await uploadImage(file);
+
+      document.getElementById(
+        "uploadStatus"
+      ).textContent =
+        "✅ სურათი ატვირთულია.";
+
+    }
+
+
+    const productData = {
+
+      name,
+      price,
+      oldPrice:
+        oldPrice > 0
+          ? oldPrice
+          : null,
+
+      category,
+      stock,
+
+      color,
+      size,
+      badge,
+      description,
+
+      image,
+      image2,
+
+      status,
+
+      updatedAt:
+        firebase.firestore
+          .FieldValue
+          .serverTimestamp()
+
+    };
+
+
+    if (editId) {
+
+      await db
+        .collection("products")
+        .doc(editId)
+        .update(productData);
+
+      showToast(
+        "პროდუქტი განახლდა ✅"
+      );
+
+    }
+    else {
+
+      productData.createdAt =
+        firebase.firestore
+          .FieldValue
+          .serverTimestamp();
+
+      await db
+        .collection("products")
+        .add(productData);
+
+      showToast(
+        "პროდუქტი დაემატა ✅"
+      );
+
+    }
+
+
+    closeModal("productModal");
+
+  }
+  catch (error) {
+
+    console.error(error);
+
+    showToast(
+      "შეცდომა: " + error.message,
+      "error"
+    );
+
+  }
+  finally {
+
+    saveBtn.disabled = false;
+
+    saveBtn.textContent =
+      "💾 შენახვა";
+
+  }
+
+}
+
+
+function editProduct(id) {
+
+  const product =
+    products.find(
+      p => p.id === id
+    );
+
+  if (!product) return;
+
+  openProductModal(product);
+
+}
+
+
+function confirmDeleteProduct(id) {
+
+  const product =
+    products.find(
+      p => p.id === id
+    );
+
+  if (!product) return;
+
+  pendingDeleteAction = async () => {
+
+    await db
+      .collection("products")
+      .doc(id)
+      .delete();
+
+    showToast(
+      "პროდუქტი წაიშალა 🗑️"
+    );
+
+  };
+
+
+  document.getElementById(
+    "confirmText"
+  ).textContent =
+    `ნამდვილად გინდა "${product.name || "პროდუქტის"}" წაშლა?`;
+
+  document
+    .getElementById("confirmModal")
+    .classList.add("show");
+
+}
+
+
+document
+  .getElementById("confirmYes")
+  .addEventListener(
+    "click",
+    async () => {
+
+      if (!pendingDeleteAction) {
+        closeModal("confirmModal");
+        return;
+      }
+
+      try {
+
+        await pendingDeleteAction();
+
+      }
+      catch (error) {
+
+        console.error(error);
+
+        showToast(
+          "წაშლა ვერ მოხერხდა: " +
+          error.message,
+          "error"
+        );
+
+      }
+
+      pendingDeleteAction = null;
+
+      closeModal("confirmModal");
+
+    }
+  );
+
+
+/* ============================================================
+   ORDERS
+============================================================ */
+
+function loadOrders() {
+
+  if (unsubscribeOrders) {
+    unsubscribeOrders();
+  }
+
+  unsubscribeOrders =
+    db
+      .collection("orders")
+      .orderBy(
+        "createdAt",
+        "desc"
+      )
+      .onSnapshot(
+        snapshot => {
+
+          orders = [];
+
+          snapshot.forEach(doc => {
+
+            orders.push({
+              id: doc.id,
+              ...doc.data()
+            });
+
+          });
+
+          renderOrders();
+          renderDashboardOrders();
+          updateDashboard();
+
+        },
+        error => {
+
+          console.error(
+            "Orders error:",
+            error
+          );
+
+          /*
+             თუ ძველ შეკვეთებში createdAt პრობლემა აქვს,
+             fallback query-ს ვცდით.
+          */
+
+          if (
+            error.code ===
+            "failed-precondition"
+          ) {
+
+            db
+              .collection("orders")
+              .onSnapshot(
+                snapshot => {
+
+                  orders = [];
+
+                  snapshot.forEach(doc => {
+
+                    orders.push({
+                      id: doc.id,
+                      ...doc.data()
+                    });
+
+                  });
+
+                  orders.sort(
+                    (a,b) => {
+
+                      const ad =
+                        getTimestampValue(
+                          a.createdAt
+                        )?.getTime() || 0;
+
+                      const bd =
+                        getTimestampValue(
+                          b.createdAt
+                        )?.getTime() || 0;
+
+                      return bd - ad;
+
+                    }
+                  );
+
+                  renderOrders();
+                  renderDashboardOrders();
+                  updateDashboard();
+
+                }
+              );
+
+          }
+          else {
+
+            showToast(
+              "შეკვეთების ჩატვირთვის შეცდომა: " +
+              error.message,
+              "error"
+            );
+
+          }
+
+        }
+      );
+
+}
+
+
+function getFilteredOrders() {
+
+  const search =
+    document.getElementById(
+      "orderSearch"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  const status =
+    document.getElementById(
+      "orderStatusFilter"
+    ).value;
+
+
+  return orders.filter(order => {
+
+    const text = [
+
+      order.customerName,
+      order.phone,
+      order.address,
+      order.userEmail
+
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+
+    return (
+      (!search ||
+        text.includes(search)) &&
+      (!status ||
+        order.status === status)
+    );
+
+  });
+
+}
+
+
+function renderOrders() {
+
+  const tbody =
+    document.getElementById(
+      "ordersTableBody"
+    );
+
+  const filtered =
+    getFilteredOrders();
+
+
+  if (!filtered.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          <div class="empty">
+            <div class="empty-icon">🛒</div>
+            შეკვეთები ვერ მოიძებნა
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  tbody.innerHTML =
+    filtered
+      .map(order => {
+
+        const productsHTML =
+          order.productDetails
+            ? String(
+                order.productDetails
+              )
+            : "—";
+
+
+        const status =
+          order.status || "ახალი";
+
+
+        return `
+          <tr>
+
+            <td>
+              ${formatDate(order.createdAt)}
+            </td>
+
+            <td>
+              <strong>
+                ${escapeHTML(order.customerName || "—")}
+              </strong>
+            </td>
+
+            <td>
+
+              ${escapeHTML(order.phone || "—")}
+
+              <br>
+
+              <span class="small-muted">
+                ${escapeHTML(order.userEmail || "")}
+              </span>
+
+            </td>
+
+            <td>
+
+              <div class="order-products">
+                ${productsHTML}
+              </div>
+
+            </td>
+
+            <td>
+              ${escapeHTML(order.delivery || "—")}
+            </td>
+
+            <td>
+              <strong>
+                ${escapeHTML(order.totalPrice || "0 ₾")}
+              </strong>
+            </td>
+
+            <td>
+
+              <select
+                class="status-select"
+                onchange="changeOrderStatus('${order.id}', this.value)"
+              >
+
+                ${getOrderStatusOptions(status)}
+
+              </select>
+
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="icon-btn"
+                  title="დეტალები"
+                  onclick="viewOrder('${order.id}')"
+                >
+                  👁️
+                </button>
+
+                <button
+                  class="icon-btn delete"
+                  title="წაშლა"
+                  onclick="confirmDeleteOrder('${order.id}')"
+                >
+                  🗑️
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+function getOrderStatusOptions(current) {
+
+  const statuses = [
+    "ახალი",
+    "დადასტურებული",
+    "მზადდება",
+    "იგზავნება",
+    "ჩაბარდა",
+    "გაუქმებული"
+  ];
+
+
+  return statuses
+    .map(
+      status =>
+        `<option value="${status}" ${current === status ? "selected" : ""}>${status}</option>`
+    )
+    .join("");
+
+}
+
+
+async function changeOrderStatus(
+  id,
+  status
+) {
+
+  try {
+
+    await db
+      .collection("orders")
+      .doc(id)
+      .update({
+
+        status,
+
+        updatedAt:
+          firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+      });
+
+
+    showToast(
+      "შეკვეთის სტატუსი შეიცვალა ✅"
+    );
+
+  }
+  catch (error) {
+
+    console.error(error);
+
+    showToast(
+      "სტატუსის შეცვლა ვერ მოხერხდა: " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+function viewOrder(id) {
+
+  const order =
+    orders.find(
+      o => o.id === id
+    );
+
+  if (!order) return;
+
+
+  document.getElementById(
+    "orderDetails"
+  ).innerHTML = `
+
+    <div style="display:grid;gap:15px;">
+
+      <div>
+        <strong>მომხმარებელი</strong>
+        <div>
+          ${escapeHTML(order.customerName || "—")}
+        </div>
+      </div>
+
+      <div>
+        <strong>ტელეფონი</strong>
+        <div>
+          ${escapeHTML(order.phone || "—")}
+        </div>
+      </div>
+
+      <div>
+        <strong>Email</strong>
+        <div>
+          ${escapeHTML(order.userEmail || "—")}
+        </div>
+      </div>
+
+      <div>
+        <strong>მისამართი</strong>
+        <div>
+          ${escapeHTML(order.address || "—")}
+        </div>
+      </div>
+
+      <div>
+        <strong>მიტანა</strong>
+        <div>
+          ${escapeHTML(order.delivery || "—")}
+        </div>
+      </div>
+
+      <div>
+        <strong>ჯამი</strong>
+        <div>
+          <strong>
+            ${escapeHTML(order.totalPrice || "0 ₾")}
+          </strong>
+        </div>
+      </div>
+
+      <div>
+        <strong>სტატუსი</strong>
+        <div>
+          ${getStatusBadge(order.status || "ახალი")}
+        </div>
+      </div>
+
+      <div>
+        <strong>შეკვეთის თარიღი</strong>
+        <div>
+          ${formatDate(order.createdAt)}
+        </div>
+      </div>
+
+      <div>
+        <strong>პროდუქტები</strong>
+
+        <div
+          style="
+            margin-top:8px;
+            padding:12px;
+            background:#f8f8f8;
+            border-radius:10px;
+            line-height:1.7;
+          "
+        >
+          ${order.productDetails || "—"}
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document
+    .getElementById("orderModal")
+    .classList.add("show");
+
+}
+
+
+function confirmDeleteOrder(id) {
+
+  pendingDeleteAction = async () => {
+
+    await db
+      .collection("orders")
+      .doc(id)
+      .delete();
+
+    showToast(
+      "შეკვეთა წაიშალა 🗑️"
+    );
+
+  };
+
+
+  document.getElementById(
+    "confirmText"
+  ).textContent =
+    "ნამდვილად გინდა ამ შეკვეთის წაშლა?";
+
+
+  document
+    .getElementById("confirmModal")
+    .classList.add("show");
+
+}
+
+
+/* ============================================================
+   USERS
+============================================================ */
+
+function loadUsers() {
+
+  if (unsubscribeUsers) {
+    unsubscribeUsers();
+  }
+
+  unsubscribeUsers =
+    db
+      .collection("users")
+      .onSnapshot(
+        snapshot => {
+
+          users = [];
+
+          snapshot.forEach(doc => {
+
+            users.push({
+              id: doc.id,
+              ...doc.data()
+            });
+
+          });
+
+          renderUsers();
+          updateDashboard();
+
+        },
+        error => {
+
+          console.error(
+            "Users error:",
+            error
+          );
+
+          showToast(
+            "მომხმარებლების ჩატვირთვის შეცდომა: " +
+            error.message,
+            "error"
+          );
+
+        }
+      );
+
+}
+
+
+function getFilteredUsers() {
+
+  const search =
+    document.getElementById(
+      "userSearch"
+    ).value
+      .trim()
+      .toLowerCase();
+
+
+  if (!search) {
+    return users;
+  }
+
+
+  return users.filter(user => {
+
+    const text = [
+
+      user.name,
+      user.displayName,
+      user.email,
+      user.phone,
+      user.address
+
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+
+    return text.includes(search);
+
+  });
+
+}
+
+
+function renderUsers() {
+
+  const tbody =
+    document.getElementById(
+      "usersTableBody"
+    );
+
+  const filtered =
+    getFilteredUsers();
+
+
+  if (!filtered.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          <div class="empty">
+            <div class="empty-icon">👥</div>
+            მომხმარებლები ვერ მოიძებნა
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  tbody.innerHTML =
+    filtered
+      .map(user => {
+
+        const name =
+          user.name ||
+          user.displayName ||
+          "უსახელო";
+
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHTML(name)}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHTML(user.email || "—")}
+            </td>
+
+            <td>
+              ${escapeHTML(user.phone || "—")}
+            </td>
+
+            <td>
+              ${escapeHTML(user.address || "—")}
+            </td>
+
+            <td>
+              ${formatDate(
+                user.createdAt ||
+                user.registeredAt
+              )}
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* ============================================================
+   REVIEWS
+============================================================ */
+
+function loadReviews() {
+
+  if (unsubscribeReviews) {
+    unsubscribeReviews();
+  }
+
+  unsubscribeReviews =
+    db
+      .collection("reviews")
+      .onSnapshot(
+        snapshot => {
+
+          reviews = [];
+
+          snapshot.forEach(doc => {
+
+            reviews.push({
+              id: doc.id,
+              ...doc.data()
+            });
+
+          });
+
+          renderReviews();
+
+          updateDashboard();
+
+        },
+        error => {
+
+          console.error(
+            "Reviews error:",
+            error
+          );
+
+          /*
+             თუ reviews კოლექცია საერთოდ არ არსებობს,
+             Firestore snapshot ჩვეულებრივ მაინც იმუშავებს.
+             permission denied-ს აქ ვაჩვენებთ.
+          */
+
+          showToast(
+            "Reviews-ის ჩატვირთვის შეცდომა: " +
+            error.message,
+            "error"
+          );
+
+        }
+      );
+
+}
+
+
+function getFilteredReviews() {
+
+  const search =
+    document.getElementById(
+      "reviewSearch"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  const status =
+    document.getElementById(
+      "reviewStatusFilter"
+    ).value;
+
+
+  return reviews.filter(review => {
+
+    const text = [
+
+      review.userName,
+      review.name,
+      review.email,
+      review.productName,
+      review.text,
+      review.comment
+
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+
+    return (
+      (!search ||
+        text.includes(search)) &&
+      (!status ||
+        review.status === status)
+    );
+
+  });
+
+}
+
+
+function renderReviews() {
+
+  const tbody =
+    document.getElementById(
+      "reviewsTableBody"
+    );
+
+  const filtered =
+    getFilteredReviews();
+
+
+  if (!filtered.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="empty">
+            <div class="empty-icon">⭐</div>
+            Reviews ვერ მოიძებნა
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  tbody.innerHTML =
+    filtered
+      .map(review => {
+
+        const rating =
+          Number(
+            review.rating
+          ) || 0;
+
+        const stars =
+          "★".repeat(
+            Math.max(
+              0,
+              Math.min(
+                5,
+                rating
+              )
+            )
+          ) +
+          "☆".repeat(
+            Math.max(
+              0,
+              5 - Math.min(
+                5,
+                rating
+              )
+            )
+          );
+
+
+        const status =
+          review.status ||
+          "pending";
+
+
+        return `
+          <tr>
+
+            <td>
+
+              <strong>
+                ${escapeHTML(
+                  review.userName ||
+                  review.name ||
+                  "ანონიმური"
+                )}
+              </strong>
+
+              <br>
+
+              <span class="small-muted">
+                ${escapeHTML(
+                  review.email || ""
+                )}
+              </span>
+
+            </td>
+
+            <td>
+              ${escapeHTML(
+                review.productName ||
+                review.product ||
+                "—"
+              )}
+            </td>
+
+            <td>
+              <span class="stars">
+                ${stars}
+              </span>
+            </td>
+
+            <td>
+
+              <div class="review-text">
+                ${escapeHTML(
+                  review.text ||
+                  review.comment ||
+                  "—"
+                )}
+              </div>
+
+            </td>
+
+            <td>
+              ${getReviewStatusBadge(status)}
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="icon-btn"
+                  title="დადასტურება"
+                  onclick="setReviewStatus('${review.id}','approved')"
+                >
+                  ✅
+                </button>
+
+                <button
+                  class="icon-btn"
+                  title="მოლოდინში"
+                  onclick="setReviewStatus('${review.id}','pending')"
+                >
+                  ⏳
+                </button>
+
+                <button
+                  class="icon-btn"
+                  title="უარყოფა"
+                  onclick="setReviewStatus('${review.id}','rejected')"
+                >
+                  ❌
+                </button>
+
+                <button
+                  class="icon-btn delete"
+                  title="წაშლა"
+                  onclick="confirmDeleteReview('${review.id}')"
+                >
+                  🗑️
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+function getReviewStatusBadge(status) {
+
+  if (status === "approved") {
+
+    return `
+      <span class="badge badge-green">
+        დადასტურებული
+      </span>
+    `;
+
+  }
+
+  if (status === "rejected") {
+
+    return `
+      <span class="badge badge-red">
+        უარყოფილი
+      </span>
+    `;
+
+  }
+
+  return `
+    <span class="badge badge-yellow">
+      მოლოდინში
+    </span>
+  `;
+
+}
+
+
+async function setReviewStatus(
+  id,
+  status
+) {
+
+  try {
+
+    await db
+      .collection("reviews")
+      .doc(id)
+      .update({
+
+        status,
+
+        moderatedAt:
+          firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+      });
+
+
+    showToast(
+      "Review-ის სტატუსი შეიცვალა ✅"
+    );
+
+  }
+  catch (error) {
+
+    console.error(error);
+
+    showToast(
+      "Review-ის განახლება ვერ მოხერხდა: " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+function confirmDeleteReview(id) {
+
+  pendingDeleteAction = async () => {
+
+    await db
+      .collection("reviews")
+      .doc(id)
+      .delete();
+
+    showToast(
+      "Review წაიშალა 🗑️"
+    );
+
+  };
+
+
+  document.getElementById(
+    "confirmText"
+  ).textContent =
+    "ნამდვილად გინდა ამ Review-ის წაშლა?";
+
+
+  document
+    .getElementById("confirmModal")
+    .classList.add("show");
+
+}
+
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
+function updateDashboard() {
+
+  document.getElementById(
+    "statProducts"
+  ).textContent =
+    products.length;
+
+
+  document.getElementById(
+    "statOrders"
+  ).textContent =
+    orders.length;
+
+
+  document.getElementById(
+    "statUsers"
+  ).textContent =
+    users.length;
+
+
+  let revenue = 0;
+
+  orders.forEach(order => {
+
+    const status =
+      order.status || "ახალი";
+
+    /*
+       გაუქმებულ შეკვეთას შემოსავალში
+       არ ვითვლით.
+    */
+
+    if (status !== "გაუქმებული") {
+
+      revenue +=
+        getPriceNumber(
+          order.totalPrice
+        );
+
+    }
+
+  });
+
+
+  document.getElementById(
+    "statRevenue"
+  ).textContent =
+    formatPrice(revenue);
+
+
+  renderLowStock();
+
+}
+
+
+function renderDashboardOrders() {
+
+  const container =
+    document.getElementById(
+      "dashboardOrders"
+    );
+
+  const recent =
+    orders.slice(0, 5);
+
+
+  if (!recent.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🛒</div>
+        შეკვეთები ჯერ არ არის
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML = `
+
+    <div class="table-wrapper">
+
+      <table style="min-width:500px;">
+
+        <thead>
+
+          <tr>
+            <th>მომხმარებელი</th>
+            <th>ჯამი</th>
+            <th>სტატუსი</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${recent
+            .map(order => {
+
+              return `
+                <tr>
+
+                  <td>
+                    <strong>
+                      ${escapeHTML(
+                        order.customerName ||
+                        "—"
+                      )}
+                    </strong>
+
+                    <br>
+
+                    <span class="small-muted">
+                      ${formatDate(
+                        order.createdAt
+                      )}
+                    </span>
+                  </td>
+
+                  <td>
+                    <strong>
+                      ${escapeHTML(
+                        order.totalPrice ||
+                        "0 ₾"
+                      )}
+                    </strong>
+                  </td>
+
+                  <td>
+                    ${getStatusBadge(
+                      order.status ||
+                      "ახალი"
+                    )}
+                  </td>
+
+                </tr>
+              `;
+
+            })
+            .join("")}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+function renderLowStock() {
+
+  const container =
+    document.getElementById(
+      "lowStockList"
+    );
+
+
+  const lowStock =
+    products
+      .filter(
+        p => getStock(p) <= 5
+      )
+      .sort(
+        (a,b) =>
+          getStock(a) -
+          getStock(b)
+      )
+      .slice(0, 8);
+
+
+  if (!lowStock.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">✅</div>
+        ყველა პროდუქტი საკმარის მარაგშია
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    lowStock
+      .map(product => {
+
+        const stock =
+          getStock(product);
+
+        const image =
+          product.image ||
+          product.imageUrl ||
+          "";
+
+
+        return `
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:10px;
+              padding:12px 0;
+              border-bottom:1px solid #eee;
+            "
+          >
+
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                min-width:0;
+              "
+            >
+
+              ${
+                image
+                  ? `
+                    <img
+                      src="${escapeHTML(image)}"
+                      style="
+                        width:42px;
+                        height:42px;
+                        border-radius:9px;
+                        object-fit:cover;
+                      "
+                    >
+                  `
+                  : `
+                    <div
+                      style="
+                        width:42px;
+                        height:42px;
+                        border-radius:9px;
+                        background:#f3f4f6;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                      "
+                    >
+                      📦
+                    </div>
+                  `
+              }
+
+              <div style="min-width:0;">
+
+                <strong
+                  style="
+                    display:block;
+                    white-space:nowrap;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                    max-width:200px;
+                  "
+                >
+                  ${escapeHTML(
+                    product.name ||
+                    "უსახელო"
+                  )}
+                </strong>
+
+                <span class="small-muted">
+                  ${escapeHTML(
+                    product.category ||
+                    ""
+                  )}
+                </span>
+
+              </div>
+
+            </div>
+
+            ${
+              stock <= 0
+                ? `<span class="badge badge-red">0</span>`
+                : `<span class="badge badge-yellow">${stock}</span>`
+            }
+
+          </div>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+const pageTitles = {
+
+  dashboardPage: "Dashboard",
+  productsPage: "პროდუქტები",
+  ordersPage: "შეკვეთები",
+  usersPage: "მომხმარებლები",
+  reviewsPage: "Reviews"
+
+};
+
+
+function showPage(pageId) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+
+      page.classList.remove("active");
+
+    });
+
+
+  const page =
+    document.getElementById(pageId);
+
+  if (page) {
+    page.classList.add("active");
+  }
+
+
+  document
+    .querySelectorAll(".nav-btn[data-page]")
+    .forEach(btn => {
+
+      btn.classList.toggle(
+        "active",
+        btn.dataset.page === pageId
+      );
+
+    });
+
+
+  document.getElementById(
+    "topbarTitle"
+  ).textContent =
+    pageTitles[pageId] ||
+    "Makasia";
+
+
+  document
+    .getElementById("sidebar")
+    .classList.remove("open");
+
+}
+
+
+window.showPage = showPage;
+
+
+document
+  .querySelectorAll(".nav-btn[data-page]")
+  .forEach(btn => {
+
+    btn.addEventListener(
+      "click",
+      () => {
+
+        showPage(
+          btn.dataset.page
+        );
+
+      }
+    );
+
+  });
+
+
+document
+  .getElementById("openStoreBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      window.open(
+        "./index1.html",
+        "_blank"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById("mobileMenu")
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById("sidebar")
+        .classList.toggle("open");
+
+    }
+  );
+
+
+/* ============================================================
+   SEARCH / FILTERS
+============================================================ */
+
+document
+  .getElementById("productSearch")
+  .addEventListener(
+    "input",
+    renderProducts
+  );
+
+
+document
+  .getElementById("productCategoryFilter")
+  .addEventListener(
+    "change",
+    renderProducts
+  );
+
+
+document
+  .getElementById("productStockFilter")
+  .addEventListener(
+    "change",
+    renderProducts
+  );
+
+
+document
+  .getElementById("orderSearch")
+  .addEventListener(
+    "input",
+    renderOrders
+  );
+
+
+document
+  .getElementById("orderStatusFilter")
+  .addEventListener(
+    "change",
+    renderOrders
+  );
+
+
+document
+  .getElementById("userSearch")
+  .addEventListener(
+    "input",
+    renderUsers
+  );
+
+
+document
+  .getElementById("reviewSearch")
+  .addEventListener(
+    "input",
+    renderReviews
+  );
+
+
+document
+  .getElementById("reviewStatusFilter")
+  .addEventListener(
+    "change",
+    renderReviews
+  );
+
+
+/* ============================================================
+   CLOSE MODALS
+============================================================ */
+
+document
+  .querySelectorAll("[data-close]")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        closeModal(
+          button.dataset.close
+        );
+
+      }
+    );
+
+  });
+
+
+document
+  .querySelectorAll(".modal-overlay")
+  .forEach(overlay => {
+
+    overlay.addEventListener(
+      "click",
+      e => {
+
+        if (
+          e.target === overlay
+        ) {
+
+          overlay.classList.remove(
+            "show"
+          );
+
+        }
+
+      }
+    );
+
+  });
+
+
+document.addEventListener(
+  "keydown",
+  e => {
+
+    if (e.key !== "Escape") {
+      return;
+    }
+
+    document
+      .querySelectorAll(
+        ".modal-overlay.show"
+      )
+      .forEach(modal => {
+
+        modal.classList.remove(
+          "show"
+        );
+
+      });
+
+  }
+);
+
+
+/* ============================================================
+   GLOBAL FUNCTIONS
+============================================================ */
+
+window.editProduct =
+  editProduct;
+
+window.confirmDeleteProduct =
+  confirmDeleteProduct;
+
+window.changeOrderStatus =
+  changeOrderStatus;
+
+window.viewOrder =
+  viewOrder;
+
+window.confirmDeleteOrder =
+  confirmDeleteOrder;
+
+window.setReviewStatus =
+  setReviewStatus;
+
+window.confirmDeleteReview =
+  confirmDeleteReview;
+
+
+/* ============================================================
+   START
+============================================================ */
+
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    checkAdminSession();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
