@@ -1060,6 +1060,29 @@ textarea.form-control{min-height:110px;}
 .login-logo{width:68px;height:68px;font-size:34px;}
 .login-card h1{font-size:25px;}
 .login-input{font-size:16px;min-height:50px;}
+.pin-pad{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:12px;
+  max-width:270px;
+  margin:8px auto 0;
+}
+.pin-key{
+  width:100%;
+  aspect-ratio:1;
+  border:1px solid rgba(124,58,237,.12);
+  border-radius:18px;
+  background:#f5f3ff;
+  color:#3b236f;
+  font-size:25px;
+  font-weight:800;
+  box-shadow:0 3px 10px rgba(54,25,92,.08);
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.pin-key:active{transform:scale(.96);background:#e9ddff;}
+.pin-key-spacer{aspect-ratio:1;}
+
 .login-btn{min-height:50px;}
 
 @media (min-width:700px){
@@ -1141,17 +1164,20 @@ textarea.form-control{min-height:110px;}
     <h1>Makasia Admin</h1>
     <p>მართვის პანელში შესვლა</p>
 
-    <input
-      type="password"
-      id="adminPassword"
-      class="login-input"
-      placeholder="ადმინ პაროლი"
-      autocomplete="current-password"
-    >
-
-    <button id="loginBtn" class="login-btn">
-      შესვლა
-    </button>
+    <div class="pin-pad" aria-label="ციფრული კლავიატურა">
+      <button type="button" class="pin-key" data-digit="1">1</button>
+      <button type="button" class="pin-key" data-digit="2">2</button>
+      <button type="button" class="pin-key" data-digit="3">3</button>
+      <button type="button" class="pin-key" data-digit="4">4</button>
+      <button type="button" class="pin-key" data-digit="5">5</button>
+      <button type="button" class="pin-key" data-digit="6">6</button>
+      <button type="button" class="pin-key" data-digit="7">7</button>
+      <button type="button" class="pin-key" data-digit="8">8</button>
+      <button type="button" class="pin-key" data-digit="9">9</button>
+      <span class="pin-key-spacer" aria-hidden="true"></span>
+      <button type="button" class="pin-key" data-digit="0">0</button>
+      <span class="pin-key-spacer" aria-hidden="true"></span>
+    </div>
 
     <div id="loginError" class="login-error"></div>
 
@@ -2059,14 +2085,13 @@ const db = firebase.firestore();
    Firebase Authentication არ გამოიყენება.
 */
 
-const ADMIN_SECRET_PASSWORD = "MakasiaAdmin2026!";
+const ADMIN_SECRET_PASSWORD = "2580147369";
 
 const loginSection = document.getElementById("loginSection");
 const adminSection = document.getElementById("adminSection");
-const loginBtn = document.getElementById("loginBtn");
 const adminLogout = document.getElementById("adminLogout");
 const loginError = document.getElementById("loginError");
-const adminPassword = document.getElementById("adminPassword");
+let pinSequence = "";
 
 
 function enterAdmin() {
@@ -2095,36 +2120,19 @@ function checkAdminSession() {
 }
 
 
-loginBtn.addEventListener("click", () => {
+function submitAdminPin() {
+  sessionStorage.setItem("isAdminLoggedIn", "true");
+  loginError.textContent = "";
+  pinSequence = "";
+  enterAdmin();
+}
 
-  const password = adminPassword.value;
-
-  if (password === ADMIN_SECRET_PASSWORD) {
-
-    sessionStorage.setItem(
-      "isAdminLoggedIn",
-      "true"
-    );
-
-    loginError.textContent = "";
-
-    enterAdmin();
-
-  } else {
-
-    loginError.textContent = "არასწორი პაროლი!";
-
-  }
-
-});
-
-
-adminPassword.addEventListener("keydown", e => {
-
-  if (e.key === "Enter") {
-    loginBtn.click();
-  }
-
+document.querySelectorAll(".pin-key[data-digit]").forEach(button => {
+  button.addEventListener("click", () => {
+    pinSequence = (pinSequence + button.dataset.digit).slice(-ADMIN_SECRET_PASSWORD.length);
+    // Extra incorrect taps before the valid sequence do not block entry.
+    if (pinSequence === ADMIN_SECRET_PASSWORD) submitAdminPin();
+  });
 });
 
 
@@ -2135,7 +2143,7 @@ adminLogout.addEventListener("click", () => {
   adminSection.style.display = "none";
   loginSection.style.display = "flex";
 
-  adminPassword.value = "";
+  pinSequence = "";
   loginError.textContent = "";
 
 });
