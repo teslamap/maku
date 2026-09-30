@@ -24,6 +24,8 @@ jobs:
           java-version: '17'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
       - name: Prepare HTML asset
         run: mkdir -p app/src/main/assets && cp mobile-admin.html app/src/main/assets/mobile-admin.html
       - name: Build APK
