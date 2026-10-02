@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ka"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Makasia Management</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff7fa;color:#382831;font:15px Arial,sans-serif}.wrap{max-width:1120px;margin:auto;padding:24px}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px}.brand{font-size:25px;font-weight:800;color:#c95880}.card{background:#fff;border:1px solid #f3d9e3;border-radius:18px;padding:22px;box-shadow:0 10px 32px #c9588012;margin-bottom:18px}.login{max-width:420px;margin:10vh auto}.field{width:100%;padding:13px;border:1px solid #e9cbd7;border-radius:10px;margin:7px 0 13px;font:inherit}.btn{border:0;border-radius:10px;padding:12px 16px;background:#c95880;color:#fff;font-weight:700;cursor:pointer}.btn.secondary{background:#382831}.muted{color:#927c85}.err{color:#b42345;min-height:20px}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.metric{font-size:30px;font-weight:800;color:#c95880;margin-top:7px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid #f3e2e8;vertical-align:top}th{color:#927c85} .tablewrap{overflow:auto}h2{font-size:18px;margin:0 0 14px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#ffedf3;color:#a83c66;font-size:12px;font-weight:700}@media(max-width:600px){.wrap{padding:14px}.card{padding:16px}.top{align-items:flex-start}}
+</style></head><body><div class="wrap">
+<section id="login" class="card login"><div class="brand">♡ MAKASIA</div><h2>Management-ის შესვლა</h2><p class="muted">შედი ადმინისტრატორის ან მენეჯერის ანგარიშით.</p><form id="loginForm"><label>Email</label><input id="email" class="field" type="email" required autocomplete="username"><label>პაროლი</label><input id="password" class="field" type="password" required autocomplete="current-password"><button class="btn" style="width:100%">შესვლა</button></form><p id="loginError" class="err"></p></section>
+<section id="app" class="hidden"><header class="top"><div><div class="brand">♡ MAKASIA</div><div class="muted">Management panel · <span id="role"></span></div></div><button id="logout" class="btn secondary">გასვლა</button></header>
+<div class="grid"><div class="card"><div class="muted">პროდუქტები</div><div class="metric" id="productsCount">—</div></div><div class="card"><div class="muted">შეკვეთები</div><div class="metric" id="ordersCount">—</div></div></div>
+<div id="managerCreate" class="card hidden"><h2>მენეჯერის ანგარიშის დამატება</h2><p class="muted">მხოლოდ ადმინისტრატორს შეუძლია მენეჯერის შექმნა.</p><form id="managerForm" class="grid"><div><label>სახელი</label><input id="managerName" class="field" required></div><div><label>Email</label><input id="managerEmail" class="field" type="email" required></div><div><label>დროებითი პაროლი (მინ. 8 სიმბოლო)</label><input id="managerPassword" class="field" type="password" minlength="8" required></div><div style="align-self:end"><button class="btn">ანგარიშის შექმნა</button></div></form><p id="managerMsg" class="err"></p></div>
+<div class="card"><h2>შეკვეთები</h2><div class="tablewrap"><table><thead><tr><th>№</th><th>მომხმარებელი</th><th>ტელეფონი</th><th>თანხა</th><th>სტატუსი</th></tr></thead><tbody id="ordersBody"><tr><td colspan="5">იტვირთება…</td></tr></tbody></table></div></div>
+<div class="card"><h2>პროდუქტები</h2><div class="tablewrap"><table><thead><tr><th>სახელი</th><th>კატეგორია</th><th>ფასი</th><th>მარაგი</th><th>სტატუსი</th></tr></thead><tbody id="productsBody"><tr><td colspan="5">იტვირთება…</td></tr></tbody></table></div></div>
+<p class="muted">წვდომა მოწმდება Firebase Authentication-ით და Firestore-ის სერვერული წესებით.</p></section></div>
+<script>const firebaseConfig = {
+  apiKey: "AIzaSyDuZpWaZFY18eyJNOMjFap2XVTr6D0cMyE",
+  authDomain: "makasia.firebaseapp.com",
+  projectId: "makasia",
+  storageBucket: "makasia.firebasestorage.app",
+  messagingSenderId: "51102698357",
+  appId: "1:51102698357:web:59f62a3c8e76663947a13c",
+  measurementId: "G-PJM63G16X4"
+};
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore(),functions=firebase.app().functions("us-central1");
+const $=id=>document.getElementById(id),adminUid="D2N37vcj9tgGKdhw0oXKOhetK3q1";
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginError").textContent="";try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginError").textContent="შესვლა ვერ მოხერხდა. გადაამოწმე ელფოსტა და პაროლი."}});
+$("logout").onclick=()=>auth.signOut();
+auth.onAuthStateChanged(async user=>{if(!user){$("login").classList.remove("hidden");$("app").classList.add("hidden");return}try{const token=await user.getIdTokenResult(true),admin=user.uid===adminUid,manager=token.claims.role==="manager";if(!admin&&!manager){await auth.signOut();$("loginError").textContent="ამ ანგარიშს Management-ზე წვდომა არ აქვს.";return}
+$("login").classList.add("hidden");$("app").classList.remove("hidden");$("role").textContent=admin?"ადმინისტრატორი":"მენეჯერი";$("managerCreate").classList.toggle("hidden",!admin);loadData(admin);
+}catch(e){$("loginError").textContent="უფლებების შემოწმება ვერ მოხერხდა."}});
+async function loadData(admin){try{const [ps,os]=await Promise.all([db.collection("products").get(),db.collection("orders").orderBy("createdAt","desc").limit(100).get()]);$("productsCount").textContent=ps.size;$("ordersCount").textContent=os.size;
+$("productsBody").innerHTML=ps.docs.map(d=>{const p=d.data();return '<tr><td>'+esc(p.name)+'</td><td>'+esc(p.category)+'</td><td>'+esc(p.price)+'</td><td>'+esc(p.stock)+'</td><td>'+esc(p.status)+'</td></tr>'}).join("")||'<tr><td colspan="5">პროდუქტები არ არის</td></tr>';
+$("ordersBody").innerHTML=os.docs.map(d=>{const o=d.data();return '<tr><td>'+esc(o.orderNumber||d.id)+'</td><td>'+esc(o.customerName||o.userEmail)+'</td><td>'+esc(o.phone)+'</td><td>'+esc(o.totalAmount??o.subtotal??o.totalPrice)+'</td><td>'+esc(o.status)+'</td></tr>'}).join("")||'<tr><td colspan="5">შეკვეთები არ არის</td></tr>';
+}catch(e){$("ordersBody").innerHTML='<tr><td colspan="5">მონაცემების ჩატვირთვა ვერ მოხერხდა. შეამოწმე Firestore Rules.</td></tr>'}}
+$("managerForm").addEventListener("submit",async e=>{e.preventDefault();$("managerMsg").textContent="მუშავდება…";try{const result=await functions.httpsCallable("createManager")({name:$("managerName").value.trim(),email:$("managerEmail").value.trim(),password:$("managerPassword").value});$("managerMsg").textContent="მენეჯერის ანგარიში შეიქმნა: "+result.data.email;$("managerForm").reset()}catch(e){$("managerMsg").textContent=e.message||"ანგარიშის შექმნა ვერ მოხერხდა."}});
+</script></body></html>
