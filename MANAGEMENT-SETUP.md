@@ -21,3 +21,7 @@ The manager cannot assign or change their own role through the site: the rules p
 - The storefront still needs Firebase Authentication integration before customer registration and authenticated order creation will work under these rules. Test records can be cleared or migrated as desired; back them up first if you want to retain them.
 - Review the exact storefront document schema and rules before using with real customers.
 - Firebase Console role changes bypass Firestore rules because they are made by the project owner. Restrict project-owner access and enable account security.
+
+
+## Customer checkout authentication
+The storefront signs guests in anonymously with Firebase Authentication so Firestore rules can validate each order's `userId`. In Firebase Console → Authentication → Sign-in method, enable **Anonymous** alongside Email/Password. This uses Firebase Authentication and Firestore without Cloud Functions or Blaze. Publish the updated Firestore rules only after reviewing them in the Console, then test guest checkout and manager sign-in in a private browser window.
