@@ -10,6 +10,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.view.View;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
@@ -25,6 +26,9 @@ public class MainActivity extends Activity {
         swipeRefresh = new SwipeRefreshLayout(this);
         webView = new WebView(this);
         swipeRefresh.addView(webView);
+        // Admin uses standalone WebView rendering for reliable modal compositing.
+        // SwipeRefreshLayout can create a separate/clipped drawing layer around fixed popups.
+        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         swipeRefresh.setOnChildScrollUpCallback((parent, child) -> webView != null && webView.canScrollVertically(-1));
         swipeRefresh.setOnRefreshListener(() -> {
             if (webView != null) webView.reload();
@@ -52,6 +56,21 @@ public class MainActivity extends Activity {
                     + "document.head.appendChild(st);}"
                     + "})();",
                     null
+                );
+                // Force modal overlays into a top-level WebView layer after every page load.
+                view.evaluateJavascript(
+                    "(function(){"
+                    + "document.querySelectorAll('.modal-overlay').forEach(function(m){"
+                    + "if(m.parentElement!==document.body)document.body.appendChild(m);"
+                    + "m.style.setProperty('position','fixed','important');"
+                    + "m.style.setProperty('left','0','important');m.style.setProperty('top','0','important');"
+                    + "m.style.setProperty('right','0','important');m.style.setProperty('bottom','0','important');"
+                    + "m.style.setProperty('width','100vw','important');m.style.setProperty('height','100vh','important');"
+                    + "m.style.setProperty('display',m.classList.contains('show')?'flex':'none','important');"
+                    + "m.style.setProperty('align-items','center','important');m.style.setProperty('justify-content','center','important');"
+                    + "m.style.setProperty('z-index','2147483647','important');"
+                    + "var p=m.querySelector('.modal');if(p){p.style.setProperty('display','block','important');p.style.setProperty('position','relative','important');p.style.setProperty('z-index','2147483647','important');p.style.setProperty('visibility','visible','important');p.style.setProperty('opacity','1','important');}});"
+                    + "})();", null
                 );
             }
         });
