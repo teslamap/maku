@@ -10,6 +10,7 @@ service cloud.firestore {
     }
     function staff() { return isAdmin() || isManager(); }
 
+    match /promos/{promoId} { allow read: if true; allow create, update, delete: if staff(); }
     match /products/{productId} {
       allow read: if true;
       allow create, update, delete: if staff();
