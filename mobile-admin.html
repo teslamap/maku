@@ -7,6 +7,7 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <style>
@@ -1260,20 +1261,9 @@ textarea.form-control{min-height:110px;}
     <h1>Makasia Admin</h1>
     <p>მართვის პანელში შესვლა</p>
 
-    <div class="pin-pad" aria-label="ციფრული კლავიატურა">
-      <button type="button" class="pin-key" data-digit="1">1</button>
-      <button type="button" class="pin-key" data-digit="2">2</button>
-      <button type="button" class="pin-key" data-digit="3">3</button>
-      <button type="button" class="pin-key" data-digit="4">4</button>
-      <button type="button" class="pin-key" data-digit="5">5</button>
-      <button type="button" class="pin-key" data-digit="6">6</button>
-      <button type="button" class="pin-key" data-digit="7">7</button>
-      <button type="button" class="pin-key" data-digit="8">8</button>
-      <button type="button" class="pin-key" data-digit="9">9</button>
-      <span class="pin-key-spacer" aria-hidden="true"></span>
-      <button type="button" class="pin-key" data-digit="0">0</button>
-      <span class="pin-key-spacer" aria-hidden="true"></span>
-    </div>
+    <input type="email" id="adminEmail" class="login-input" value="sulikoananidze999@gmail.com" readonly autocomplete="username" aria-label="ადმინის ელფოსტა">
+    <input type="password" id="adminPassword" class="login-input" placeholder="Firebase პაროლი" autocomplete="current-password" aria-label="Firebase პაროლი">
+    <button type="button" id="loginBtn" class="login-btn">შესვლა</button>
 
     <div id="loginError" class="login-error"></div>
 
@@ -2248,78 +2238,98 @@ const db = firebase.firestore();
 
 
 /* ============================================================
-   ADMIN LOGIN
+   FIREBASE AUTHENTICATED ADMIN LOGIN
 ============================================================ */
 
-/*
-   ზუსტად ძველი admin-ის სტილი.
-   Firebase Authentication არ გამოიყენება.
-*/
-
-const ADMIN_SECRET_PASSWORD = "1234567890";
+const ADMIN_UID = "D2N37vcj9tgGKdhw0oXKOhetK3q1";
+const ADMIN_EMAIL = "sulikoananidze999@gmail.com";
+const auth = firebase.auth();
 
 const loginSection = document.getElementById("loginSection");
 const adminSection = document.getElementById("adminSection");
+const loginBtn = document.getElementById("loginBtn");
 const adminLogout = document.getElementById("adminLogout");
 const loginError = document.getElementById("loginError");
-let pinSequence = "";
+const adminPassword = document.getElementById("adminPassword");
+const adminEmail = document.getElementById("adminEmail");
 
+function showAdminLogin(message = "") {
+  loginSection.style.display = "flex";
+  adminSection.style.display = "none";
+  if (message) loginError.textContent = message;
+}
 
 function enterAdmin() {
-
   loginSection.style.display = "none";
   adminSection.style.display = "block";
-
   loadAllData();
   loadPromoCodes();
-
 }
 
-
-function checkAdminSession() {
-
-  if (sessionStorage.getItem("isAdminLoggedIn") === "true") {
-
-    enterAdmin();
-
-  } else {
-
-    loginSection.style.display = "flex";
-    adminSection.style.display = "none";
-
+async function loginAdmin() {
+  const password = adminPassword.value;
+  if (!password) {
+    loginError.textContent = "შეიყვანე Firebase-ის პაროლი.";
+    return;
   }
-
-}
-
-
-function submitAdminPin() {
-  sessionStorage.setItem("isAdminLoggedIn", "true");
+  loginBtn.disabled = true;
+  loginBtn.textContent = "მიმდინარეობს შესვლა...";
   loginError.textContent = "";
-  pinSequence = "";
-  enterAdmin();
+  try {
+    const credential = await auth.signInWithEmailAndPassword(ADMIN_EMAIL, password);
+    if (credential.user.uid !== ADMIN_UID) {
+      await auth.signOut();
+      showAdminLogin("ეს ანგარიში მითითებული ადმინის UID-ს არ ემთხვევა.");
+      return;
+    }
+    adminPassword.value = "";
+  } catch (error) {
+    console.error("Admin authentication error:", error);
+    const messages = {
+      "auth/invalid-credential": "ელფოსტა ან Firebase-ის პაროლი არასწორია.",
+      "auth/user-not-found": "ეს ელფოსტა Firebase Authentication-ში არ არის რეგისტრირებული.",
+      "auth/wrong-password": "Firebase-ის პაროლი არასწორია.",
+      "auth/too-many-requests": "ძალიან ბევრი მცდელობაა. ცოტა ხანში სცადე.",
+      "auth/network-request-failed": "ქსელის შეცდომა. შეამოწმე ინტერნეტი."
+    };
+    loginError.textContent = messages[error.code] || "ავტორიზაცია ვერ მოხერხდა: " + (error.message || error.code);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "შესვლა";
+  }
 }
 
-document.querySelectorAll(".pin-key[data-digit]").forEach(button => {
-  button.addEventListener("click", () => {
-    pinSequence = (pinSequence + button.dataset.digit).slice(-ADMIN_SECRET_PASSWORD.length);
-    // Extra incorrect taps before the valid sequence do not block entry.
-    if (pinSequence === ADMIN_SECRET_PASSWORD) submitAdminPin();
-  });
+loginBtn.addEventListener("click", loginAdmin);
+adminPassword.addEventListener("keydown", e => {
+  if (e.key === "Enter") loginAdmin();
 });
 
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    showAdminLogin();
+    return;
+  }
+  if (user.uid !== ADMIN_UID || user.email !== ADMIN_EMAIL) {
+    await auth.signOut();
+    showAdminLogin("ანგარიშს ადმინის შესაბამისი უფლებები არ აქვს.");
+    return;
+  }
+  loginError.textContent = "";
+  enterAdmin();
+});
 
-adminLogout.addEventListener("click", () => {
-
-  sessionStorage.removeItem("isAdminLoggedIn");
-
+adminLogout.addEventListener("click", async () => {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error("Admin sign-out error:", error);
+    loginError.textContent = "სისტემიდან გამოსვლა ვერ მოხერხდა.";
+  }
   adminSection.style.display = "none";
   loginSection.style.display = "flex";
-
-  pinSequence = "";
-  loginError.textContent = "";
-
+  adminEmail.value = ADMIN_EMAIL;
+  adminPassword.value = "";
 });
-
 
 /* ============================================================
    CLOUDINARY
