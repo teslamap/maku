@@ -33,6 +33,22 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 swipeRefresh.setRefreshing(false);
+                // Android WebView can paint CSS fixed/animated modal sheets behind
+                // their own backdrop on some WebView versions. Normalize modal
+                // compositing only inside the native app; browser HTML stays unchanged.
+                view.evaluateJavascript(
+                    "(function(){"
+                    + "var st=document.getElementById('__android_modal_fix');"
+                    + "if(!st){st=document.createElement('style');st.id='__android_modal_fix';"
+                    + "st.textContent='.modal-overlay{position:absolute!important;z-index:99999!important;}"
+                    + ".modal-overlay.show{display:flex!important;visibility:visible!important;opacity:1!important;}"
+                    + ".modal-overlay .modal{position:relative!important;z-index:100000!important;"
+                    + "transform:none!important;animation:none!important;max-height:90vh!important;"
+                    + "visibility:visible!important;opacity:1!important;}';"
+                    + "document.head.appendChild(st);}"
+                    + "})();",
+                    null
+                );
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
