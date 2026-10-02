@@ -44,11 +44,11 @@ function prepare(){
   });
   if(!d.body.dataset.editorEvents){
     d.body.dataset.editorEvents='1';
-    d.body.addEventListener('click',onClick,true);
-    d.body.addEventListener('dragstart',onDragStart,true);
-    d.body.addEventListener('dragover',onDragOver,true);
-    d.body.addEventListener('drop',onDrop,true);
-    d.body.addEventListener('dragend',clearDrop,true);
+    d.addEventListener('click',onClick,true);
+    d.addEventListener('dragstart',onDragStart,true);
+    d.addEventListener('dragover',onDragOver,true);
+    d.addEventListener('drop',onDrop,true);
+    d.addEventListener('dragend',clearDrop,true);
   }
   drawLayers();
 }
