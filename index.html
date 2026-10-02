@@ -3227,6 +3227,8 @@ textarea.form-control{
 
       <div id="profileContent"></div>
 
+      <div id="accountAuthPanel" style="margin-top:14px;"></div>
+
     </div>
 
   </div>
@@ -5588,7 +5590,97 @@ function openProfile(){
 
     `;
 
+  renderAccountPanel();
+
   openModal("profileModal");
+}
+
+function renderAccountPanel(){
+  const host = document.getElementById("accountAuthPanel");
+  if(!host) return;
+  const user = auth.currentUser;
+  if(user && !user.isAnonymous){
+    host.innerHTML = `
+      <div style="padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-solid);">
+        <div style="font-weight:800;margin-bottom:6px;">ანგარიში დაკავშირებულია</div>
+        <div style="font-size:12px;color:var(--muted);word-break:break-word;">${escapeHTML(user.email || "")}</div>
+        <button class="secondary-btn full-btn" style="margin-top:12px;" onclick="customerSignOut()">გასვლა</button>
+      </div>`;
+    return;
+  }
+  host.innerHTML = `
+    <div style="padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-solid);">
+      <div style="font-weight:800;margin-bottom:5px;">შექმენი ანგარიში</div>
+      <p style="font-size:11px;color:var(--muted);margin:0 0 12px;">რეგისტრაციის შემდეგ შეკვეთების ისტორია ანგარიშთან იქნება დაკავშირებული.</p>
+      <input id="accountName" type="text" autocomplete="name" placeholder="სახელი" style="width:100%;box-sizing:border-box;margin-bottom:9px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);">
+      <input id="accountEmail" type="email" autocomplete="email" placeholder="ელფოსტა" style="width:100%;box-sizing:border-box;margin-bottom:9px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);">
+      <input id="accountPassword" type="password" autocomplete="new-password" placeholder="პაროლი (მინ. 6 სიმბოლო)" style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);">
+      <button class="primary-btn full-btn" onclick="customerRegister()">რეგისტრაცია</button>
+      <button class="secondary-btn full-btn" style="margin-top:8px;" onclick="customerLogin()">უკვე მაქვს ანგარიში — შესვლა</button>
+      <div id="accountAuthMessage" role="status" style="font-size:11px;margin-top:10px;"></div>
+    </div>`;
+}
+function accountAuthMessage(message, error=false){
+  const el=document.getElementById("accountAuthMessage");
+  if(el){el.textContent=message;el.style.color=error?"var(--danger)":"var(--success)";}
+}
+async function saveCustomerAccount(user, name){
+  guestId=user.uid;
+  localStorage.setItem("makasia_guest_id",guestId);
+  if(name) localStorage.setItem("makasia_customer_name",name);
+  await db.collection("users").doc(user.uid).set({
+    uid:user.uid,email:user.email||"",name:name||localStorage.getItem("makasia_customer_name")||"მომხმარებელი",updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+}
+async function customerRegister(){
+  const name=(document.getElementById("accountName")?.value||"").trim();
+  const email=(document.getElementById("accountEmail")?.value||"").trim();
+  const password=document.getElementById("accountPassword")?.value||"";
+  if(!name||!email||password.length<6){accountAuthMessage("შეავსე ყველა ველი. პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს.",true);return;}
+  try{
+    const credential=firebase.auth.EmailAuthProvider.credential(email,password);
+    let result;
+    if(auth.currentUser && auth.currentUser.isAnonymous){
+      result=await auth.currentUser.linkWithCredential(credential);
+    }else{
+      result=await auth.createUserWithEmailAndPassword(email,password);
+    }
+    await saveCustomerAccount(result.user,name);
+    accountAuthMessage("ანგარიში წარმატებით შეიქმნა!");
+    renderAccountPanel();
+    document.getElementById("profileName").textContent=name;
+    document.getElementById("profileAvatar").textContent=name.charAt(0).toUpperCase();
+  }catch(error){
+    console.error("Customer registration failed:",error);
+    const messages={"auth/email-already-in-use":"ეს ელფოსტა უკვე რეგისტრირებულია. შედი ანგარიშში.","auth/invalid-email":"ელფოსტის მისამართი არასწორია.","auth/weak-password":"პაროლი ძალიან მარტივია (მინიმუმ 6 სიმბოლო).","auth/credential-already-in-use":"ეს ელფოსტა სხვა ანგარიშს ეკუთვნის. შედი არსებულ ანგარიშში."};
+    accountAuthMessage(messages[error.code]||"რეგისტრაცია ვერ შესრულდა. სცადე ხელახლა.",true);
+  }
+}
+async function customerLogin(){
+  const email=(document.getElementById("accountEmail")?.value||"").trim();
+  const password=document.getElementById("accountPassword")?.value||"";
+  if(!email||!password){accountAuthMessage("შეიყვანე ელფოსტა და პაროლი.",true);return;}
+  try{
+    const result=await auth.signInWithEmailAndPassword(email,password);
+    await saveCustomerAccount(result.user,localStorage.getItem("makasia_customer_name")||"მომხმარებელი");
+    renderAccountPanel();
+    document.getElementById("profileName").textContent=localStorage.getItem("makasia_customer_name")||"მომხმარებელი";
+    accountAuthMessage("წარმატებით შეხვედი.");
+  }catch(error){
+    console.error("Customer login failed:",error);
+    const messages={"auth/user-not-found":"ასეთი ანგარიში ვერ მოიძებნა.","auth/wrong-password":"პაროლი არასწორია.","auth/invalid-credential":"ელფოსტა ან პაროლი არასწორია.","auth/invalid-email":"ელფოსტის მისამართი არასწორია."};
+    accountAuthMessage(messages[error.code]||"შესვლა ვერ შესრულდა. სცადე ხელახლა.",true);
+  }
+}
+async function customerSignOut(){
+  try{
+    await auth.signOut();
+    await auth.signInAnonymously();
+    guestId=auth.currentUser.uid;
+    localStorage.setItem("makasia_guest_id",guestId);
+    renderAccountPanel();
+    document.getElementById("profileName").textContent="სტუმარი";
+  }catch(error){console.error("Sign out failed:",error);accountAuthMessage("გასვლა ვერ შესრულდა.",true);}
 }
 
 function closeProfile(){
