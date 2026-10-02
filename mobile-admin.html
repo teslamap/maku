@@ -5189,6 +5189,61 @@ if (sidebarCloseMenu) {
     document.getElementById("sidebar").classList.remove("open");
   });
 }
+
+/* ============================================================
+   MODAL HARDENING — Android WebView + all mobile browsers
+   Keep every popup independent from app/container stacking.
+============================================================ */
+(function(){
+  function hardenModal(modal){
+    if(!modal) return;
+    if(modal.parentElement !== document.body){
+      document.body.appendChild(modal);
+    }
+    if(modal.classList.contains("show")){
+      modal.style.setProperty("display","flex","important");
+      modal.style.setProperty("visibility","visible","important");
+      modal.style.setProperty("opacity","1","important");
+      modal.style.setProperty("position","fixed","important");
+      modal.style.setProperty("inset","0","important");
+      modal.style.setProperty("align-items","center","important");
+      modal.style.setProperty("justify-content","center","important");
+      modal.style.setProperty("z-index","2147483000","important");
+      const panel=modal.querySelector(".modal");
+      if(panel){
+        panel.style.setProperty("display","block","important");
+        panel.style.setProperty("visibility","visible","important");
+        panel.style.setProperty("opacity","1","important");
+        panel.style.setProperty("position","relative","important");
+        panel.style.setProperty("z-index","2147483001","important");
+        panel.style.setProperty("transform","none","important");
+      }
+    }
+  }
+  function initModalHardening(){
+    document.querySelectorAll(".modal-overlay").forEach(hardenModal);
+    const observer=new MutationObserver(function(records){
+      records.forEach(function(record){
+        if(record.type==="childList"){
+          record.addedNodes.forEach(function(node){
+            if(node.nodeType===1){
+              if(node.matches && node.matches(".modal-overlay")) hardenModal(node);
+              if(node.querySelectorAll) node.querySelectorAll(".modal-overlay").forEach(hardenModal);
+            }
+          });
+        }
+        if(record.type==="attributes" && record.attributeName==="class"){
+          const el=record.target;
+          if(el.matches && el.matches(".modal-overlay")) hardenModal(el);
+        }
+      });
+    });
+    observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initModalHardening);
+  else initModalHardening();
+})();
+
 </script>
 
 </body>
