@@ -2464,6 +2464,14 @@ textarea.form-control{
     right:15px;
   }
 }
+
+/* Checkout modal: keep confirmation reachable above the mobile bottom bar */
+@media(max-width:700px){
+  #checkoutModal{align-items:flex-start;overflow-y:auto;overscroll-behavior:contain;padding:10px 10px calc(18px + env(safe-area-inset-bottom));}
+  #checkoutModal .modal{width:100%;max-height:calc(100dvh - 28px - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;margin:auto 0;}
+  #checkoutModal .modal-content{padding:15px 18px calc(105px + env(safe-area-inset-bottom));}
+  #checkoutModal #checkoutForm button[type="submit"]{position:relative;z-index:1;margin-bottom:8px;min-height:52px;}
+}
 </style>
 </head>
 
