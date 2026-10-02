@@ -9,15 +9,29 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private ValueCallback<Uri[]> filePathCallback;
+    private WebView webView;
+    private SwipeRefreshLayout swipeRefresh;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WebView webView = new WebView(this);
-        webView.setWebViewClient(new WebViewClient());
+        swipeRefresh = new SwipeRefreshLayout(this);
+        webView = new WebView(this);
+        swipeRefresh.addView(webView);
+        swipeRefresh.setOnChildScrollUpCallback((parent, child) -> webView != null && webView.canScrollVertically(-1));
+        swipeRefresh.setOnRefreshListener(() -> {
+            if (webView != null) webView.reload();
+            else swipeRefresh.setRefreshing(false);
+        });
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                swipeRefresh.setRefreshing(false);
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(
@@ -61,7 +75,7 @@ public class MainActivity extends Activity {
         }
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl(pageUrl);
-        setContentView(webView);
+        setContentView(swipeRefresh);
     }
 
     @Override
@@ -80,5 +94,11 @@ public class MainActivity extends Activity {
         }
         filePathCallback.onReceiveValue(results);
         filePathCallback = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
 }
