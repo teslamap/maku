@@ -11,6 +11,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
@@ -64,6 +66,9 @@ public class MainActivity extends Activity {
         // Keep the web UI's explicitly designed light colors in Android WebView.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             s.setForceDark(WebSettings.FORCE_DARK_OFF);
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+                WebSettingsCompat.setAlgorithmicDarkeningAllowed(s, false);
+            }
         }
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
