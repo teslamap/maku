@@ -27,23 +27,41 @@ const frame=document.getElementById('pageFrame'),layers=document.getElementById(
 let selected=null,scale=1,uid=0;
 function doc(){return frame.contentDocument||frame.contentWindow.document}
 function label(el){return el.getAttribute('data-editor-label')||el.id||el.tagName.toLowerCase()}
-function elements(){return [...doc().body.querySelectorAll('*')].filter(e=>e!==doc().body && !['SCRIPT','STYLE','SVG','PATH'].includes(e.tagName))}
+function elements(){
+  if(!frame.contentDocument)return[];
+  return [...frame.contentDocument.querySelectorAll('*')].filter(el=>!['HTML','HEAD','SCRIPT','STYLE','LINK','META','TITLE'].includes(el.tagName));
+}
+function elementLabel(el){
+  return el.dataset.editorLabel || el.getAttribute('aria-label') || el.getAttribute('alt') || el.id || el.className?.toString().replace(/editor-selected|editor-drop/g,'').trim() || el.tagName.toLowerCase();
+}
 function prepare(){
-  const els=elements();
-  els.forEach(el=>{
-    if(!el.dataset.editorId) el.dataset.editorId='el'+(++uid);
-    el.addEventListener('click',onClick,true);
-    el.setAttribute('draggable','true');
-    el.addEventListener('dragstart',onDragStart);
-    el.addEventListener('dragover',onDragOver);
-    el.addEventListener('drop',onDrop);
-    el.addEventListener('dragend',clearDrop);
+  if(!frame.contentDocument)return;
+  const d=frame.contentDocument;
+  d.querySelectorAll('.editor-selected,.editor-drop').forEach(x=>x.classList.remove('editor-selected','editor-drop'));
+  elements().forEach(el=>{
+    if(!el.dataset.editorId)el.dataset.editorId='el'+(++uid);
+    if(!el.dataset.editorLabel)el.dataset.editorLabel=elementLabel(el);
   });
+  if(!d.body.dataset.editorEvents){
+    d.body.dataset.editorEvents='1';
+    d.body.addEventListener('click',onClick,true);
+    d.body.addEventListener('dragstart',onDragStart,true);
+    d.body.addEventListener('dragover',onDragOver,true);
+    d.body.addEventListener('drop',onDrop,true);
+    d.body.addEventListener('dragend',clearDrop,true);
+  }
   drawLayers();
 }
-function onClick(e){if(e.target.closest('[data-editor-ignore]'))return;e.preventDefault();e.stopPropagation();select(e.currentTarget)}
-function select(el){selected=el;elements().forEach(x=>x.classList.toggle('editor-selected',x===el));drawLayers();drawProps()}
-function drawLayers(){layers.innerHTML='';if(!frame.contentDocument)return;elements().slice(0,80).reverse().forEach(el=>{const d=document.createElement('div');d.className='layer'+(selected===el?' active':'');d.innerHTML='<span>◈</span><span></span>';d.children[1].textContent=label(el);d.onclick=()=>select(el);layers.appendChild(d)})}
+function onClick(e){
+  const el=e.target.closest('*');
+  if(!el||['HTML','HEAD','BODY','SCRIPT','STYLE'].includes(el.tagName))return;
+  e.preventDefault();e.stopPropagation();select(el);
+}
+function select(el){
+  selected=el;
+  elements().forEach(x=>x.classList.toggle('editor-selected',x===el));
+  drawLayers();drawProps();
+}
 function drawProps(){
  if(!selected){props.innerHTML='<div class="empty">რეალური mobile-index ჩატვირთვის შემდეგ დააჭირე ნებისმიერ ელემენტს.</div>';return}
  const cs=frame.contentWindow.getComputedStyle(selected),text=(selected.innerText||'').trim().replace(/\s+/g,' ').slice(0,200);
@@ -60,7 +78,10 @@ document.getElementById('pradius').oninput=e=>selected.style.borderRadius=e.targ
 document.getElementById('delete').onclick=()=>{if(selected&&selected.parentElement!==doc().body){selected.remove();selected=null;drawLayers();drawProps()}}
 }
 function hex(c){const m=c&&c.match(/\d+/g);return m&&m.length>=3?'#'+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,'0')).join(''):null}
-let drag=null;function onDragStart(e){drag=e.currentTarget;e.dataTransfer.setData('text/plain','1')}function onDragOver(e){e.preventDefault();if(e.currentTarget!==drag)e.currentTarget.classList.add('editor-drop')}function onDrop(e){e.preventDefault();const t=e.currentTarget;if(drag&&t!==drag&&drag.parentNode===t.parentNode)t.parentNode.insertBefore(drag,t);clearDrop()}function clearDrop(){elements().forEach(x=>x.classList.remove('editor-drop'))}
+let drag=null;function onDragStart(e){const el=e.target.closest('*');if(!el||el===drag)return;drag=el;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',el.dataset.editorId||'1')}
+function onDragOver(e){e.preventDefault();const t=e.target.closest('*');if(t&&t!==drag)t.classList.add('editor-drop')}
+function onDrop(e){e.preventDefault();const t=e.target.closest('*');if(drag&&t&&t!==drag&&drag.parentNode===t.parentNode)t.parentNode.insertBefore(drag,t);clearDrop()}
+function clearDrop(){elements().forEach(x=>x.classList.remove('editor-drop'));drag=null}
 function zoom(d){scale=Math.max(.6,Math.min(1.2,scale+d));frame.style.transform='scale('+scale+')';frame.style.transformOrigin='top center';document.getElementById('zoomlabel').textContent=Math.round(scale*100)+'%'}
 function addBlock(type){const d=doc();const el=d.createElement(type==='button'?'button':type==='heading'?'h2':'div');el.textContent=type==='button'?'ახალი ღილაკი':type==='heading'?'ახალი სათაური':'ახალი ელემენტი';el.dataset.editorId='el'+(++uid);el.dataset.editorLabel=el.textContent;el.style.cssText='margin:16px;padding:16px;background:#eee;border-radius:12px;color:#222;text-align:center;';d.body.appendChild(el);prepare();select(el)}
 function savePage(){localStorage.setItem('makasia_visual_editor_html',doc().documentElement.outerHTML);document.getElementById('status').textContent='რეალური mobile-index-ის ცვლილებები შენახულია ამ მოწყობილობაზე'}
