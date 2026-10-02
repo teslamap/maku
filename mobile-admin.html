@@ -1243,6 +1243,66 @@ textarea.form-control{min-height:110px;}
   }
 }
 @media (min-width:801px){.sidebar-close-menu{display:none!important;}}
+
+/* Promo management visual refresh */
+#promosPage{min-width:0;width:100%;color:#25213a}
+#promosPage>.panel-header{align-items:center;gap:16px;padding:22px 24px;margin:0 0 18px;border:1px solid #e9e2f5;border-radius:20px;background:radial-gradient(circle at 90% 0%,rgba(216,180,254,.35),transparent 34%),linear-gradient(120deg,#fff 0%,#faf6ff 65%,#fff5fa 100%);box-shadow:0 8px 28px rgba(67,36,110,.06)}
+#promosPage>.panel-header h2{font-size:clamp(20px,2.2vw,27px)!important;font-weight:850;color:#30204e;letter-spacing:-.5px}
+#promosPage>.panel-header .small-muted{margin-top:6px;line-height:1.55;color:#77708b}
+#promosPage .btn{border:1px solid #e6def2;border-radius:11px;padding:10px 14px;background:#f7f4fc;color:#51416c;font-weight:750;transition:transform .18s,box-shadow .18s,background .18s}
+#promosPage .btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(91,53,145,.12)}
+#promosPage .btn-primary{border:0;background:linear-gradient(135deg,#7040d5,#a34bd0);color:#fff;box-shadow:0 6px 16px rgba(112,64,213,.2)}
+#promosPage>.panel{min-width:0;border:1px solid #e9e2f2;border-radius:19px;padding:22px;background:#fff;box-shadow:0 5px 22px rgba(40,25,70,.045)}
+#promosPage #promoForm{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))!important;gap:17px!important;align-items:end}
+#promosPage #promoForm>label{min-width:0;color:#514568;font-size:12px;font-weight:800;line-height:1.5;letter-spacing:.1px}
+#promosPage #promoForm .form-input{box-sizing:border-box;min-width:0;min-height:46px;padding:11px 13px;border:1px solid #e5deef;border-radius:12px;background:#fcfbff;color:#30283f;font:inherit;font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s}
+#promosPage #promoForm .form-input:focus{border-color:#9870e9;box-shadow:0 0 0 4px rgba(124,58,237,.1);background:#fff}
+#promosPage #promoForm label:has(#promoEnabled){display:flex!important;align-items:center;gap:9px;padding:12px 0;color:#3d3155}
+#promosPage #promoEnabled{accent-color:#7c3aed;width:19px!important;height:19px!important}
+#promosPage #promoForm>div{display:flex;gap:9px;flex-wrap:wrap}
+#promosPage .panel>.panel-header{align-items:center;flex-wrap:wrap;margin-bottom:15px}
+#promosPage .panel>.panel-header h2{font-size:18px;font-weight:850;color:#30204e}
+#promosPage .table-wrapper{width:100%;max-width:100%;overflow-x:auto;border:1px solid #eee8f5;border-radius:13px}
+#promosPage table{min-width:850px!important;border-collapse:separate;border-spacing:0}
+#promosPage th{background:#f8f5fc;color:#6d6082;font-size:11px;text-transform:uppercase;letter-spacing:.35px}
+#promosPage th,#promosPage td{padding:14px 12px;border-bottom:1px solid #f0ebf5}
+#promosPage tbody tr:last-child td{border-bottom:0}
+#promosPage tbody tr:hover td{background:#fcfaff}
+#promosPage td:first-child strong{display:inline-block;padding:6px 10px;border:1px dashed #cdb9ee;border-radius:8px;background:#f8f2ff;color:#6536ad;font-size:13px;letter-spacing:.6px}
+#promosPage .status{display:inline-flex;align-items:center;white-space:nowrap;padding:6px 10px;border-radius:30px;font-size:11px;font-weight:800}
+#promosPage .status-done{background:#dcfce9;color:#167344}
+#promosPage .status-new{background:#e7f0ff;color:#2859a5}
+#promosPage .status-cancel{background:#fff0e9;color:#ad4a1d}
+#promosPage td .btn{min-height:34px;padding:7px 10px;font-size:12px}
+#promosPage td .btn-danger{background:#fff0f0;border-color:#ffdddd;color:#c03939}
+#promosPage .small-muted{line-height:1.55}
+@media(max-width:800px){
+  html,body{max-width:100%;overflow-x:clip}
+  #adminSection,.app,.main,.content,.page{min-width:0;max-width:100%;width:100%}
+  .main{width:100%!important}
+  .content{overflow-x:clip}
+  .page>*{min-width:0;max-width:100%}
+  .dashboard-grid,.stats-grid,.toolbar,.panel{min-width:0}
+  .table-wrapper{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+  #promosPage>.panel-header{padding:17px 15px;border-radius:16px;align-items:stretch}
+  #promosPage>.panel-header>div{min-width:0}
+  #promosPage>.panel-header .btn{align-self:flex-start}
+  #promosPage>.panel{padding:14px;border-radius:16px}
+  #promosPage #promoForm{grid-template-columns:minmax(0,1fr)!important;gap:13px!important}
+  #promosPage #promoForm>label{width:100%;min-width:0}
+  #promosPage #promoForm .form-input{width:100%!important;max-width:100%;font-size:16px}
+  #promosPage #promoForm>div .btn{flex:1}
+  #promosPage .panel>.panel-header{gap:10px}
+  #promosPage .panel>.panel-header h2{font-size:16px}
+  #promosPage table{min-width:780px!important}
+}
+@media(max-width:380px){
+  .content{padding-left:9px!important;padding-right:9px!important}
+  .mobile-bottom-nav{padding-left:3px;padding-right:3px;grid-template-columns:repeat(6,minmax(0,1fr))}
+  .mobile-bottom-nav .nav-label{font-size:8px}
+  #promosPage>.panel-header h2{font-size:19px!important}
+}
+
 </style>
 </head>
 
