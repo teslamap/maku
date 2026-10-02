@@ -1,20 +1,23 @@
-# Makasia Authentication & Management rollout
+# Makasia — Firebase Spark setup
 
-## What is included
-- `management.html`: Firebase email/password staff sign-in, product/order read view, and primary-admin-only manager creation UI.
-- `functions/`: callable function creates manager accounts using Firebase Admin SDK and assigns the manager custom claim server-side.
-- `firestore.rules`: denies guest writes; allows public product/review reads, authenticated users to read/write their own profile and create/read their own orders, managers to read products/orders and update order status only, and the primary admin full access.
-- `firebase.json`: Firebase CLI deployment configuration.
+## Included
+- `management.html`: Firebase Email/Password login and staff read view for products/orders.
+- `firestore.rules`: role checks use the protected `users/{uid}.role` profile field; only the primary admin can write staff roles.
+- No Cloud Functions are required or deployed, so this setup does not require upgrading to Blaze.
 
-## Required Firebase setup
-1. Confirm the primary administrator account exists in Firebase Authentication and its UID matches the allowlisted UID in `firestore.rules` and `functions/index.js`.
-2. In Authentication > Sign-in method, enable Email/Password.
-3. Install Node.js 20 and Firebase CLI, then run `firebase login` and `firebase use makasia` in this repository.
-4. From the repository root run `cd functions && npm install && cd ..`, then `firebase deploy --only functions:createManager`.
-5. Review `firestore.rules` against your deployed schema, then run `firebase deploy --only firestore:rules`.
-6. Host `management.html` on the same HTTPS origin as the storefront. Open it and sign in as the primary admin. Create manager accounts from the panel.
+## Add the one manager manually (Spark)
+1. In Firebase Console → Authentication → Sign-in method, enable Email/Password.
+2. Go to Authentication → Users → Add user. Create the manager using their email and a temporary password. Do not share passwords in chat.
+3. Copy the new user's UID.
+4. Go to Firestore Database → Data → `users` → Add document. Set the document ID to that exact UID.
+5. Add fields such as `name` (string), `email` (string), and `role` (string) with exact value `manager`.
+6. Publish the repository's `firestore.rules` in Firebase Console → Firestore Database → Rules. Sign in at `management.html` with that account.
 
-## Important migration note
-These rules intentionally stop unauthenticated guest checkout writes. The current storefront uses guest IDs and has no Firebase Authentication, so checkout/review creation will fail until the storefront is migrated to Firebase Auth or guest order creation is moved behind a trusted backend. Do not treat the rules as production-ready for the existing guest checkout flow without that migration. Managers can only update the order `status` field; adapt allowed status values/validation to the exact storefront workflow before production.
+The manager cannot assign or change their own role through the site: the rules permit only the primary admin UID to write role fields. Manual role edits in Firebase Console are performed by the project owner.
 
-The primary admin is allowlisted by UID for bootstrap. Manager claims can only be issued by the callable function, which checks that UID on the server. Never put Admin SDK credentials or service-account keys in frontend code.
+## Important limitations
+- This Spark-compatible arrangement uses a Firestore profile role instead of custom claims. Do not expose role editing to managers.
+- The current Management page displays product/order data but is not yet a full CRUD/order-status interface.
+- The storefront still needs Firebase Authentication integration before customer registration and authenticated order creation will work under these rules. Test records can be cleared or migrated as desired; back them up first if you want to retain them.
+- Review the exact storefront document schema and rules before using with real customers.
+- Firebase Console role changes bypass Firestore rules because they are made by the project owner. Restrict project-owner access and enable account security.
