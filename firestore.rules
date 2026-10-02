@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.uid == "D2N37vcj9tgGKdhw0oXKOhetK3q1"; }
+    function isManager() { return signedIn() && request.auth.token.role == "manager"; }
+    function staff() { return isAdmin() || isManager(); }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if staff();
+    }
+    match /orders/{orderId} {
+      allow read: if staff() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId','customerName','createdAt','status','items'])
+        && request.resource.data.status in ['pending','new','შეკვეთილია','მუშავდება'];
+      allow update: if isAdmin() || (isManager()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status is string);
+      allow delete: if isAdmin();
+    }
+    match /users/{userId} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow create, update: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow delete: if isAdmin();
+    }
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+    }
+    match /{document=**} { allow read, write: if isAdmin(); }
+  }
+}
