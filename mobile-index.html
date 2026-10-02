@@ -3504,25 +3504,7 @@ const auth = firebase.auth();
 const DELIVERY_FEE = 5;
 const FREE_DELIVERY_FROM = 100;
 
-const PROMOS = {
-  "MAKASIA10": {
-    type: "percent",
-    value: 10,
-    min: 0
-  },
-
-  "WELCOME": {
-    type: "percent",
-    value: 15,
-    min: 50
-  },
-
-  "LOVE20": {
-    type: "percent",
-    value: 20,
-    min: 150
-  }
-};
+let PROMOS={};async function loadPromos(){try{const s=await db.collection("promos").get(),n={};s.docs.forEach(d=>{let p=d.data();if(p.code)n[String(p.code).toUpperCase()]={...p,id:d.id}});PROMOS=n;if(appliedPromo&&!PROMOS[appliedPromo.code])appliedPromo=null;updateCartUI()}catch(e){console.warn("Promo load failed",e)}}function promoValidity(p){let n=Date.now(),s=p.startAt?new Date(p.startAt).getTime():0,e=p.endAt?new Date(p.endAt).getTime():Infinity;if(p.active===false)return "პრომო გამორთულია";if(!Number.isFinite(s)||!Number.isFinite(e))return "პრომოს თარიღები არასწორია";if(n<s)return "პრომო ჯერ არ ამოქმედებულა";if(n>e)return "პრომოს ვადა ამოიწურა";return ""}
 
 /* =========================================================
    STATE
@@ -4321,27 +4303,7 @@ function calculateCart(){
       0
     );
 
-  let discount = 0;
-
-  if(appliedPromo){
-
-    const promo =
-      PROMOS[appliedPromo.code];
-
-    if(promo){
-
-      if(subtotal >= promo.min){
-
-        if(promo.type === "percent"){
-          discount =
-            subtotal *
-            promo.value /
-            100;
-        }
-      }
-    }
-  }
-
+  let discount=0;if(appliedPromo){const promo=PROMOS[appliedPromo.code];if(promo&&!promoValidity(promo)&&subtotal>=Number(promo.min||0)){discount=promo.type==="fixed"?Number(promo.value||0):subtotal*Number(promo.value||0)/100;if(promo.maxDiscount>0)discount=Math.min(discount,Number(promo.maxDiscount));discount=Math.min(subtotal,Math.max(0,discount));}}
   const afterDiscount =
     Math.max(0,subtotal-discount);
 
@@ -5377,6 +5339,7 @@ document
         subtotal:data.subtotal,
 
         discount:data.discount,
+        promoCode:appliedPromo?.code || "",
 
         deliveryFee:data.delivery,
 
@@ -5492,77 +5455,7 @@ document
    PROMO
 ========================================================= */
 
-function applyPromo(){
-
-  const input =
-    document.getElementById("promoInput");
-
-  const message =
-    document.getElementById("promoMessage");
-
-  const code =
-    input.value.trim().toUpperCase();
-
-  if(!code){
-
-    message.textContent =
-      "შეიყვანე promo code.";
-
-    message.style.color =
-      "var(--danger)";
-
-    return;
-  }
-
-  const promo =
-    PROMOS[code];
-
-  if(!promo){
-
-    appliedPromo = null;
-
-    message.textContent =
-      "ეს promo code არ არსებობს.";
-
-    message.style.color =
-      "var(--danger)";
-
-    updateCartUI();
-
-    return;
-  }
-
-  const subtotal =
-    calculateCart().subtotal;
-
-  if(subtotal < promo.min){
-
-    message.textContent =
-      `ამ კოდისთვის მინიმუმ ${formatPrice(promo.min)} არის საჭირო.`;
-
-    message.style.color =
-      "var(--warning)";
-
-    return;
-  }
-
-  appliedPromo = {
-    code
-  };
-
-  message.textContent =
-    `✓ ${code} გააქტიურდა — ${promo.value}%`;
-
-  message.style.color =
-    "var(--success)";
-
-  updateCartUI();
-
-  showToast(
-    "Promo code გააქტიურდა 💗",
-    "success"
-  );
-}
+async function applyPromo(){const input=document.getElementById("promoInput"),message=document.getElementById("promoMessage"),code=input.value.trim().toUpperCase(),fail=t=>{appliedPromo=null;message.textContent=t;message.style.color="var(--danger)";updateCartUI()};if(!code){fail("შეიყვანე promo code.");return}if(!Object.keys(PROMOS).length)await loadPromos();const p=PROMOS[code];if(!p){fail("ეს promo code არ არსებობს.");return}const invalid=promoValidity(p);if(invalid){fail(invalid);return}if(calculateCart().subtotal<Number(p.min||0)){fail("მინიმალური შეკვეთა: "+formatPrice(p.min));return}appliedPromo={code};message.textContent="✓ "+code+" გააქტიურდა";message.style.color="var(--success)";updateCartUI();showToast("Promo code გააქტიურდა 💗","success")}function removePromo(){appliedPromo=null;document.getElementById("promoMessage").textContent="პრომო მოხსნილია";updateCartUI()}
 
 /* =========================================================
    PROFILE
@@ -6333,7 +6226,8 @@ async function init(){
 
   await Promise.all([
     loadProducts(),
-    loadReviews()
+    loadReviews(),
+    loadPromos()
   ]);
 
   renderProducts();
