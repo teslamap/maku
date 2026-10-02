@@ -2532,6 +2532,13 @@ body{padding-bottom:78px}
   .product-image{min-height:130px!important}
   .product-name{font-size:12px!important}
 }
+/* Checkout confirmation visibility above the fixed mobile navigation */
+@media(max-width:700px){
+  #checkoutModal{align-items:flex-start!important;overflow-y:auto!important;overscroll-behavior:contain;padding:10px 10px calc(18px + env(safe-area-inset-bottom))!important;}
+  #checkoutModal .modal{max-height:calc(100dvh - 28px - env(safe-area-inset-bottom))!important;overflow-y:auto!important;overscroll-behavior:contain;margin:auto 0!important;border-radius:24px!important;}
+  #checkoutModal .modal-content{padding:15px 18px calc(105px + env(safe-area-inset-bottom))!important;}
+  #checkoutModal #checkoutForm button[type="submit"]{position:relative;z-index:2;margin-bottom:8px;min-height:52px;}
+}
 </style>
 </head>
 
