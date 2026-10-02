@@ -7,6 +7,7 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <style>
@@ -943,11 +944,12 @@
     <h1>Makasia Admin 2</h1>
     <p>მართვის პანელში შესვლა</p>
 
+    <input type="email" id="adminEmail" class="login-input" value="sulikoananidze999@gmail.com" readonly autocomplete="username" aria-label="ადმინის ელფოსტა">
     <input
       type="password"
       id="adminPassword"
       class="login-input"
-      placeholder="ადმინ პაროლი"
+      placeholder="Firebase პაროლი"
       autocomplete="current-password"
     >
 
@@ -1909,15 +1911,12 @@ const db = firebase.firestore();
 
 
 /* ============================================================
-   ADMIN LOGIN
+   FIREBASE AUTHENTICATED ADMIN LOGIN
 ============================================================ */
 
-/*
-   ზუსტად ძველი admin-ის სტილი.
-   Firebase Authentication არ გამოიყენება.
-*/
-
-const ADMIN_SECRET_PASSWORD = "MakasiaAdmin2026!";
+const ADMIN_UID = "D2N37vcj9tgGKdhw0oXKOhetK3q1";
+const ADMIN_EMAIL = "sulikoananidze999@gmail.com";
+const auth = firebase.auth();
 
 const loginSection = document.getElementById("loginSection");
 const adminSection = document.getElementById("adminSection");
@@ -1925,80 +1924,85 @@ const loginBtn = document.getElementById("loginBtn");
 const adminLogout = document.getElementById("adminLogout");
 const loginError = document.getElementById("loginError");
 const adminPassword = document.getElementById("adminPassword");
+const adminEmail = document.getElementById("adminEmail");
 
+function showAdminLogin(message = "") {
+  loginSection.style.display = "flex";
+  adminSection.style.display = "none";
+  if (message) loginError.textContent = message;
+}
 
 function enterAdmin() {
-
   loginSection.style.display = "none";
   adminSection.style.display = "block";
-
   loadAllData();
   loadPromoCodes();
-
 }
 
-
-function checkAdminSession() {
-
-  if (sessionStorage.getItem("isAdminLoggedIn") === "true") {
-
-    enterAdmin();
-
-  } else {
-
-    loginSection.style.display = "flex";
-    adminSection.style.display = "none";
-
-  }
-
-}
-
-
-loginBtn.addEventListener("click", () => {
-
+async function loginAdmin() {
   const password = adminPassword.value;
-
-  if (password === ADMIN_SECRET_PASSWORD) {
-
-    sessionStorage.setItem(
-      "isAdminLoggedIn",
-      "true"
-    );
-
-    loginError.textContent = "";
-
-    enterAdmin();
-
-  } else {
-
-    loginError.textContent = "არასწორი პაროლი!";
-
+  if (!password) {
+    loginError.textContent = "შეიყვანე Firebase-ის პაროლი.";
+    return;
   }
+  loginBtn.disabled = true;
+  loginBtn.textContent = "მიმდინარეობს შესვლა...";
+  loginError.textContent = "";
+  try {
+    const credential = await auth.signInWithEmailAndPassword(ADMIN_EMAIL, password);
+    if (credential.user.uid !== ADMIN_UID) {
+      await auth.signOut();
+      showAdminLogin("ეს ანგარიში მითითებული ადმინის UID-ს არ ემთხვევა.");
+      return;
+    }
+    adminPassword.value = "";
+  } catch (error) {
+    console.error("Admin authentication error:", error);
+    const messages = {
+      "auth/invalid-credential": "ელფოსტა ან Firebase-ის პაროლი არასწორია.",
+      "auth/user-not-found": "ეს ელფოსტა Firebase Authentication-ში არ არის რეგისტრირებული.",
+      "auth/wrong-password": "Firebase-ის პაროლი არასწორია.",
+      "auth/too-many-requests": "ძალიან ბევრი მცდელობაა. ცოტა ხანში სცადე.",
+      "auth/network-request-failed": "ქსელის შეცდომა. შეამოწმე ინტერნეტი."
+    };
+    loginError.textContent = messages[error.code] || "ავტორიზაცია ვერ მოხერხდა: " + (error.message || error.code);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "შესვლა";
+  }
+}
 
-});
-
-
+loginBtn.addEventListener("click", loginAdmin);
 adminPassword.addEventListener("keydown", e => {
-
-  if (e.key === "Enter") {
-    loginBtn.click();
-  }
-
+  if (e.key === "Enter") loginAdmin();
 });
 
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    showAdminLogin();
+    return;
+  }
+  if (user.uid !== ADMIN_UID || user.email !== ADMIN_EMAIL) {
+    await auth.signOut();
+    showAdminLogin("ანგარიშს ადმინის შესაბამისი უფლებები არ აქვს.");
+    return;
+  }
+  loginError.textContent = "";
+  enterAdmin();
+});
 
-adminLogout.addEventListener("click", () => {
-
-  sessionStorage.removeItem("isAdminLoggedIn");
-
+adminLogout.addEventListener("click", async () => {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error("Admin sign-out error:", error);
+    loginError.textContent = "სისტემიდან გამოსვლა ვერ მოხერხდა.";
+  }
   adminSection.style.display = "none";
   loginSection.style.display = "flex";
-
+  adminEmail.value = ADMIN_EMAIL;
   adminPassword.value = "";
-  loginError.textContent = "";
-
 });
-
 
 /* ============================================================
    CLOUDINARY
