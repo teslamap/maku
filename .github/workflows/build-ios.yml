@@ -1,0 +1,20 @@
+name: Build Makasia iOS
+on:
+  push:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/build-ios.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build unsigned iOS app for Simulator
+        run: |
+          xcodebuild -project ios/Makasia.xcodeproj -scheme Makasia -sdk iphonesimulator -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+      - name: Upload Simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makasia-iOS-Simulator
+          path: build/Build/Products/Release-iphonesimulator/Makasia.app
