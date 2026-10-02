@@ -1118,7 +1118,7 @@ textarea.form-control{min-height:110px;}
   -webkit-backdrop-filter:blur(20px);
   border-top:1px solid #e5e7eb;
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(6,minmax(0,1fr));
   z-index:1400;
   box-shadow:0 -6px 25px rgba(0,0,0,.07);
 }
@@ -1332,6 +1332,11 @@ textarea.form-control{min-height:110px;}
       <button class="nav-btn" data-page="reviewsPage">
         <span class="nav-icon">⭐</span>
         Reviews
+      </button>
+
+      <button class="nav-btn" data-page="promosPage">
+        <span class="nav-icon">🎟️</span>
+        პრომო კოდები
       </button>
 
       <div class="nav-title">სხვა</div>
@@ -1783,10 +1788,74 @@ textarea.form-control{min-height:110px;}
 
         </section>
 
+        <!-- =================================================
+             PROMO CODES (ADMIN ONLY)
+        ================================================== -->
+
+        <section class="page" id="promosPage">
+          <div class="panel-header">
+            <div>
+              <h2 style="font-size:26px;">🎟️ პრომო კოდების მართვა</h2>
+              <div class="small-muted">შექმენი, შეცვალე, გამორთე ან წაშალე ფასდაკლების კოდები.</div>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="resetPromoForm()">＋ ახალი პრომო</button>
+          </div>
+
+          <div class="panel" style="margin-bottom:20px;">
+            <form id="promoForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end;">
+              <input type="hidden" id="promoDocId">
+              <label style="display:block;">პრომო კოდი
+                <input id="promoCode" class="form-input" maxlength="32" required placeholder="მაგ. SUMMER15" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:block;">ფასდაკლება (%)
+                <input id="promoPercent" class="form-input" type="number" min="1" max="90" step="1" required value="10" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:block;">მინ. შეკვეთა (₾)
+                <input id="promoMin" class="form-input" type="number" min="0" step="0.01" value="0" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:block;">მოქმედებს — დან
+                <input id="promoStart" class="form-input" type="datetime-local" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:block;">მოქმედებს — მდე
+                <input id="promoEnd" class="form-input" type="datetime-local" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:block;">გამოყენების ლიმიტი
+                <input id="promoLimit" class="form-input" type="number" min="0" step="1" placeholder="0 = ულიმიტო" value="0" style="display:block;width:100%;margin-top:6px;">
+              </label>
+              <label style="display:flex;gap:8px;align-items:center;padding:12px 0;">
+                <input id="promoEnabled" type="checkbox" checked style="width:18px;height:18px;"> აქტიურია
+              </label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-primary" type="submit">შენახვა</button>
+                <button class="btn" type="button" onclick="resetPromoForm()">გასუფთავება</button>
+              </div>
+            </form>
+            <div class="small-muted" style="margin-top:12px;">ლიმიტი ითვლის კოდის გამოყენებას შეკვეთის შექმნისას. თარიღები ადგილობრივ დროში შეიყვანე.</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h2>არსებული პრომოები</h2><button class="btn" type="button" onclick="loadPromoCodes()">↻ განახლება</button></div>
+            <div class="table-wrapper">
+              <table style="min-width:900px;">
+                <thead><tr><th>კოდი</th><th>ფასდაკლება</th><th>მინ. შეკვეთა</th><th>ვადა</th><th>გამოყენება</th><th>სტატუსი</th><th>მოქმედება</th></tr></thead>
+                <tbody id="promoTableBody"><tr><td colspan="7" class="empty">იტვირთება...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
 
     </main>
 
+    <nav class="mobile-bottom-nav" aria-label="ადმინის მენიუ">
+      <button class="nav-btn active" data-page="dashboardPage"><span class="nav-icon">📊</span><span class="nav-label">მთავარი</span></button>
+      <button class="nav-btn" data-page="productsPage"><span class="nav-icon">📦</span><span class="nav-label">პროდუქტები</span></button>
+      <button class="nav-btn" data-page="ordersPage"><span class="nav-icon">🛒</span><span class="nav-label">შეკვეთები</span></button>
+      <button class="nav-btn" data-page="usersPage"><span class="nav-icon">👥</span><span class="nav-label">მომხმარებლები</span></button>
+      <button class="nav-btn" data-page="reviewsPage"><span class="nav-icon">⭐</span><span class="nav-label">შეფასებები</span></button>
+      <button class="nav-btn" data-page="promosPage"><span class="nav-icon">🎟️</span><span class="nav-label">პრომო</span></button>
+    </nav>
   </div>
 
 </section>
@@ -2202,6 +2271,7 @@ function enterAdmin() {
   adminSection.style.display = "block";
 
   loadAllData();
+  loadPromoCodes();
 
 }
 
@@ -4635,13 +4705,116 @@ function renderLowStock() {
    NAVIGATION
 ============================================================ */
 
+/* ============================================================
+   PROMO CODE MANAGEMENT — ADMIN PANEL
+============================================================ */
+let promoCodesCache = [];
+
+function promoDateValue(value){
+  if(!value) return null;
+  const date = value.toDate ? value.toDate() : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+function promoDateText(value){
+  const date = promoDateValue(value);
+  return date ? date.toLocaleString("ka-GE") : "—";
+}
+function promoStatus(p){
+  const now=Date.now(), start=promoDateValue(p.startsAt), end=promoDateValue(p.expiresAt);
+  if(p.enabled===false) return ["გამორთული","status-cancel"];
+  if(start && now<start.getTime()) return ["ჯერ არ დაწყებულა","status-new"];
+  if(end && now>end.getTime()) return ["ვადაგასული","status-cancel"];
+  if(Number(p.usageLimit)>0 && Number(p.usageCount||0)>=Number(p.usageLimit)) return ["ლიმიტი ამოწურულია","status-cancel"];
+  return ["აქტიური","status-done"];
+}
+async function loadPromoCodes(){
+  const body=document.getElementById("promoTableBody");
+  if(!body) return;
+  body.innerHTML='<tr><td colspan="7" class="empty">იტვირთება...</td></tr>';
+  try{
+    const snap=await db.collection("promoCodes").get();
+    promoCodesCache=snap.docs.map(doc=>({id:doc.id,...doc.data()})).sort((a,b)=>a.code.localeCompare(b.code));
+    if(!promoCodesCache.length){
+      body.innerHTML='<tr><td colspan="7" class="empty">პრომო კოდები ჯერ არ არის დამატებული.</td></tr>';return;
+    }
+    body.innerHTML=promoCodesCache.map(p=>{
+      const status=promoStatus(p);
+      return '<tr><td><strong>'+escapeHTML(p.code||p.id)+'</strong></td>'+
+        '<td>'+Number(p.value||0)+'%</td><td>'+formatPrice(Number(p.min||0))+' ₾</td>'+
+        '<td>'+escapeHTML(promoDateText(p.startsAt))+' — '+escapeHTML(promoDateText(p.expiresAt))+'</td>'+
+        '<td>'+Number(p.usageCount||0)+' / '+(Number(p.usageLimit)>0?Number(p.usageLimit):'∞')+'</td>'+
+        '<td><span class="status '+status[1]+'">'+status[0]+'</span></td>'+
+        '<td><div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn btn-small" onclick="editPromoCode(\''+escapeHTML(p.id)+'\')">✏️</button>'+
+        '<button class="btn btn-small '+(p.enabled===false?'btn-success':'')+'" onclick="togglePromoCode(\''+escapeHTML(p.id)+'\')">'+(p.enabled===false?'ჩართვა':'გამორთვა')+'</button>'+
+        '<button class="btn btn-danger btn-small" onclick="deletePromoCode(\''+escapeHTML(p.id)+'\')">🗑️</button></div></td></tr>';
+    }).join("");
+  }catch(error){
+    console.error("Promo load failed",error);
+    body.innerHTML='<tr><td colspan="7" class="empty">პრომოების ჩატვირთვა ვერ მოხერხდა. შეამოწმე Firestore Rules.</td></tr>';
+  }
+}
+function resetPromoForm(){
+  const form=document.getElementById("promoForm");if(!form)return;
+  form.reset();document.getElementById("promoDocId").value="";
+  document.getElementById("promoPercent").value=10;document.getElementById("promoMin").value=0;
+  document.getElementById("promoLimit").value=0;document.getElementById("promoEnabled").checked=true;
+}
+function editPromoCode(id){
+  const p=promoCodesCache.find(x=>x.id===id);if(!p)return;
+  document.getElementById("promoDocId").value=p.id;
+  document.getElementById("promoCode").value=p.code||p.id;
+  document.getElementById("promoPercent").value=p.value||10;
+  document.getElementById("promoMin").value=p.min||0;
+  document.getElementById("promoStart").value=p.startsAt?new Date(promoDateValue(p.startsAt).getTime()-new Date(promoDateValue(p.startsAt).getTime()).getTimezoneOffset()*60000).toISOString().slice(0,16):"";
+  document.getElementById("promoEnd").value=p.expiresAt?new Date(promoDateValue(p.expiresAt).getTime()-new Date(promoDateValue(p.expiresAt).getTime()).getTimezoneOffset()*60000).toISOString().slice(0,16):"";
+  document.getElementById("promoLimit").value=p.usageLimit||0;
+  document.getElementById("promoEnabled").checked=p.enabled!==false;
+  showPage("promosPage");document.getElementById("promoCode").focus();
+}
+document.getElementById("promoForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const code=document.getElementById("promoCode").value.trim().toUpperCase().replace(/\s+/g,"");
+  const value=Number(document.getElementById("promoPercent").value),min=Number(document.getElementById("promoMin").value||0),limit=Number(document.getElementById("promoLimit").value||0);
+  const start=document.getElementById("promoStart").value,end=document.getElementById("promoEnd").value;
+  if(!/^[A-Z0-9_-]{3,32}$/.test(code)){showToast("კოდი უნდა შეიცავდეს 3–32 ლათინურ ასოს, ციფრს, _ ან -", "error");return;}
+  if(!Number.isFinite(value)||value<1||value>90||!Number.isFinite(min)||min<0||!Number.isInteger(limit)||limit<0){showToast("შეამოწმე ფასდაკლება, მინიმალური თანხა და ლიმიტი","error");return;}
+  if(start&&end&&new Date(end)<=new Date(start)){showToast("დასრულების თარიღი დაწყებაზე გვიან უნდა იყოს","error");return;}
+  const existingId=document.getElementById("promoDocId").value;
+  const collision=promoCodesCache.find(p=>p.code===code&&p.id!==existingId);
+  if(collision){showToast("ასეთი პრომო კოდი უკვე არსებობს","error");return;}
+  const previous=promoCodesCache.find(p=>p.id===existingId);
+  const payload={code,type:"percent",value,min,startsAt:start?new Date(start).toISOString():null,expiresAt:end?new Date(end).toISOString():null,usageLimit:limit,usageCount:Number(previous?.usageCount||0),enabled:document.getElementById("promoEnabled").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  try{
+    await db.collection("promoCodes").doc(existingId||code).set(payload,{merge:true});
+    resetPromoForm();await loadPromoCodes();showToast("პრომო კოდი შენახულია");
+  }catch(error){console.error(error);showToast("შენახვა ვერ მოხერხდა — შეამოწმე Firestore Rules","error");}
+});
+window.editPromoCode=editPromoCode;
+window.togglePromoCode=async function(id){
+  const p=promoCodesCache.find(x=>x.id===id);if(!p)return;
+  try{await db.collection("promoCodes").doc(id).update({enabled:p.enabled===false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});await loadPromoCodes();showToast("სტატუსი განახლდა");}
+  catch(e){console.error(e);showToast("სტატუსის შეცვლა ვერ მოხერხდა","error");}
+};
+window.deletePromoCode=function(id){
+  const p=promoCodesCache.find(x=>x.id===id);if(!p)return;
+  pendingDeleteAction=async()=>{
+    try{await db.collection("promoCodes").doc(id).delete();await loadPromoCodes();showToast("პრომო წაიშალა");}
+    catch(e){console.error(e);showToast("წაშლა ვერ მოხერხდა","error");}
+  };
+  document.getElementById('confirmText').textContent='ნამდვილად წავშალოთ '+(p.code||id)+'?';
+  document.getElementById('confirmModal').classList.add('show');
+};
+window.resetPromoForm=resetPromoForm;
+
 const pageTitles = {
 
   dashboardPage: "Dashboard",
   productsPage: "პროდუქტები",
   ordersPage: "შეკვეთები",
   usersPage: "მომხმარებლები",
-  reviewsPage: "Reviews"
+  reviewsPage: "Reviews",
+  promosPage: "პრომო კოდები"
 
 };
 
