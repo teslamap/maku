@@ -1,0 +1,28 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1;
+ classes = {};
+ objectVersion = 56;
+ objects = {
+  A10000000000000000000001 = {isa = PBXBuildFile; fileRef = A10000000000000000000004; };
+  A10000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakasiaApp.swift; sourceTree = "<group>"; };
+  A10000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+  A10000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakasiaApp.swift; sourceTree = "<group>"; };
+  A10000000000000000000005 = {isa = PBXGroup; children = (A10000000000000000000002, A10000000000000000000003,); path = Makasia; sourceTree = "<group>"; };
+  A10000000000000000000006 = {isa = PBXGroup; children = (A10000000000000000000005,); sourceTree = "<group>"; };
+  A10000000000000000000007 = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000008; buildPhases = (A10000000000000000000009, A1000000000000000000000A, A1000000000000000000000B,); buildRules = (); dependencies = (); name = Makasia; productName = Makasia; productReference = A1000000000000000000000C; productType = "com.apple.product-type.application"; };
+  A10000000000000000000008 = {isa = XCConfigurationList; buildConfigurations = (A1000000000000000000000D, A1000000000000000000000E,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+  A10000000000000000000009 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001,); runOnlyForDeploymentPostprocessing = 0; };
+  A1000000000000000000000A = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+  A1000000000000000000000B = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+  A1000000000000000000000C = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Makasia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+  A1000000000000000000000F = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600; }; buildConfigurationList = A10000000000000000000010; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = A10000000000000000000006; productRefGroup = A10000000000000000000011; projectDirPath = ""; projectRoot = ""; targets = (A10000000000000000000007,); };
+  A10000000000000000000010 = {isa = XCConfigurationList; buildConfigurations = (A10000000000000000000012, A10000000000000000000013,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+  A10000000000000000000011 = {isa = PBXGroup; children = (A1000000000000000000000C,); name = Products; sourceTree = "<group>"; };
+  A1000000000000000000000D = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Makasia/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.makasia.store.ios; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+  A1000000000000000000000E = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Makasia/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.makasia.store.ios; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+  A10000000000000000000012 = {isa = XCBuildConfiguration; buildSettings = { }; name = Debug; };
+  A10000000000000000000013 = {isa = XCBuildConfiguration; buildSettings = { }; name = Release; };
+ };
+ rootObject = A1000000000000000000000F;
+}
