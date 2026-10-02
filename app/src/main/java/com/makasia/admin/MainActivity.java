@@ -40,11 +40,15 @@ public class MainActivity extends Activity {
                     "(function(){"
                     + "var st=document.getElementById('__android_modal_fix');"
                     + "if(!st){st=document.createElement('style');st.id='__android_modal_fix';"
-                    + "st.textContent='.modal-overlay{position:absolute!important;z-index:99999!important;}"
+                    + "st.textContent='.modal-overlay{position:absolute!important;left:0!important;top:0!important;width:100%!important;min-height:100vh!important;"
+                    + "display:none!important;align-items:center!important;justify-content:center!important;padding:20px!important;"
+                    + "background:rgba(0,0,0,.55)!important;z-index:99999!important;}"
                     + ".modal-overlay.show{display:flex!important;visibility:visible!important;opacity:1!important;}"
                     + ".modal-overlay .modal{position:relative!important;z-index:100000!important;"
-                    + "transform:none!important;animation:none!important;max-height:90vh!important;"
-                    + "visibility:visible!important;opacity:1!important;}';"
+                    + "width:min(720px,100%)!important;max-width:720px!important;margin:auto!important;"
+                    + "max-height:90vh!important;border-radius:20px!important;overflow-y:auto!important;"
+                    + "transform:none!important;animation:none!important;visibility:visible!important;opacity:1!important;}"
+                    + ".modal-overlay .modal.small{max-width:450px!important;}';"
                     + "document.head.appendChild(st);}"
                     + "})();",
                     null
