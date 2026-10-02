@@ -1303,6 +1303,7 @@ textarea.form-control{min-height:110px;}
   #promosPage>.panel-header h2{font-size:19px!important}
 }
 
+.revenue-stat-card{cursor:pointer;transition:transform .18s,box-shadow .18s}.revenue-stat-card:hover,.revenue-stat-card:focus{transform:translateY(-2px);box-shadow:0 10px 28px rgba(17,51,85,.16);outline:2px solid rgba(123,44,191,.35)}.revenue-hint{font-size:11px;color:#7b2cbf;font-weight:700;margin-left:5px}.revenue-filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:18px}.revenue-filters label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#52647a;min-width:170px;flex:1}.revenue-filters input{width:100%;min-height:42px;border:1px solid #d5deea;border-radius:10px;padding:9px 11px;background:#fff;color:#18324d;font:inherit}.revenue-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 20px}.revenue-summary>div{background:linear-gradient(135deg,#f3f7ff,#f8f2ff);border:1px solid #e1e8f3;border-radius:13px;padding:14px;display:flex;flex-direction:column;gap:6px}.revenue-summary span{font-size:12px;color:#66758a}.revenue-summary strong{font-size:20px;color:#173b62}#revenueDetailsBody td{vertical-align:middle}@media(max-width:600px){.revenue-filters{display:grid;grid-template-columns:1fr 1fr}.revenue-filters label{min-width:0}.revenue-filters button{width:100%;font-size:12px;padding:10px 6px}.revenue-summary{gap:6px}.revenue-summary>div{padding:9px 7px}.revenue-summary strong{font-size:15px}.revenue-summary span{font-size:10px}}
 </style>
 </head>
 
@@ -1476,12 +1477,8 @@ textarea.form-control{min-height:110px;}
               <div class="stat-icon">👥</div>
             </div>
 
-            <div class="stat-card">
-              <div>
-                <div class="stat-label">შემოსავალი</div>
-                <div class="stat-value" id="statRevenue">0 ₾</div>
-              </div>
-              <div class="stat-icon">💰</div>
+            <div class="stat-card revenue-stat-card" role="button" tabindex="0" onclick="openRevenueModal()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRevenueModal();}">
+              <div><div class="stat-label">შემოსავალი <span class="revenue-hint">დეტალები ↗</span></div><div class="stat-value" id="statRevenue">0 ₾</div></div><div class="stat-icon">💰</div>
             </div>
 
           </div>
@@ -2214,6 +2211,7 @@ textarea.form-control{min-height:110px;}
 </div>
 
 
+<div class="modal-overlay" id="revenueModal"><div class="modal" style="width:min(980px,96vw);max-height:90vh;overflow:auto"><div class="modal-header"><div><h2>💰 შემოსავლის დეტალები</h2><div class="small-muted">შეკვეთების შემოსავალი არჩეულ პერიოდში</div></div><button class="close-modal" type="button" onclick="closeModal('revenueModal')">✕</button></div><div class="modal-body"><div class="revenue-filters"><label>საწყისი თარიღი<input type="date" id="revenueFrom"></label><label>საბოლოო თარიღი<input type="date" id="revenueTo"></label><button class="primary-btn" type="button" onclick="renderRevenueDetails()">ფილტრაცია</button><button class="secondary-btn" type="button" onclick="resetRevenueFilter()">მთელი პერიოდი</button></div><div class="revenue-summary"><div><span>შეკვეთები</span><strong id="revenueOrderCount">0</strong></div><div><span>ჯამური შემოსავალი</span><strong id="revenueTotal">0 ₾</strong></div><div><span>საშუალო შეკვეთა</span><strong id="revenueAverage">0 ₾</strong></div></div><div class="table-wrapper"><table><thead><tr><th>თარიღი</th><th>შეკვეთა / მომხმარებელი</th><th>პროდუქტები</th><th>სტატუსი</th><th>თანხა</th></tr></thead><tbody id="revenueDetailsBody"></tbody></table></div></div></div></div>
 <!-- =========================================================
      CONFIRM MODAL
 ========================================================= -->
@@ -4474,6 +4472,10 @@ function confirmDeleteReview(id) {
 /* ============================================================
    DASHBOARD
 ============================================================ */
+
+function openRevenueModal(){const m=document.getElementById("revenueModal");if(!m)return;m.classList.add("show");renderRevenueDetails();}
+function resetRevenueFilter(){document.getElementById("revenueFrom").value="";document.getElementById("revenueTo").value="";renderRevenueDetails();}
+function renderRevenueDetails(){const fv=document.getElementById("revenueFrom")?.value||"",tv=document.getElementById("revenueTo")?.value||"",body=document.getElementById("revenueDetailsBody");if(fv&&tv&&fv>tv){body.innerHTML='<tr><td colspan="5">საწყისი თარიღი საბოლოო თარიღზე გვიანია.</td></tr>';return;}const from=fv?new Date(fv+"T00:00:00"):null,to=tv?new Date(tv+"T23:59:59.999"):null;const rows=(orders||[]).filter(o=>{if((o.status||"ახალი")==="გაუქმებული")return false;const d=getTimestampValue(o.createdAt);if(!d)return !from&&!to;return(!from||d>=from)&&(!to||d<=to);}).sort((a,b)=>(getTimestampValue(b.createdAt)?.getTime()||0)-(getTimestampValue(a.createdAt)?.getTime()||0));const total=rows.reduce((n,o)=>n+getPriceNumber(o.totalPrice),0);document.getElementById("revenueOrderCount").textContent=rows.length;document.getElementById("revenueTotal").textContent=formatPrice(total);document.getElementById("revenueAverage").textContent=formatPrice(rows.length?total/rows.length:0);body.innerHTML=rows.length?rows.map(o=>'<tr><td>'+escapeHTML(formatDate(o.createdAt))+'</td><td><strong>'+escapeHTML(o.customerName||"—")+'</strong><br><small>'+escapeHTML(String(o.id||o.orderId||"—"))+'</small></td><td>'+escapeHTML(String(o.productDetails||"—"))+'</td><td>'+escapeHTML(o.status||"ახალი")+'</td><td><strong>'+escapeHTML(formatPrice(getPriceNumber(o.totalPrice)))+'</strong></td></tr>').join(""):'<tr><td colspan="5"><div class="empty">არჩეულ პერიოდში შეკვეთები არ არის.</div></td></tr>';}
 
 function updateDashboard() {
 
