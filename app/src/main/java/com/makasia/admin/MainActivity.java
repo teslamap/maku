@@ -1,6 +1,8 @@
 package com.makasia.app;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.Intent;
@@ -29,6 +31,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        createOrderNotificationChannel();
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[] { Manifest.permission.POST_NOTIFICATIONS }, 2001);
         }
@@ -164,6 +167,16 @@ public class MainActivity extends Activity {
             .addOnSuccessListener(token -> { fcmToken = token; deliverFcmToken(); })
             .addOnFailureListener(error -> Log.w("MakasiaFCM", "Unable to retrieve FCM token", error));
         setContentView(swipeRefresh);
+    }
+
+    private void createOrderNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                "makasia_orders", "Makasia შეკვეთები", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("ახალი შეკვეთების შეტყობინებები");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
+        }
     }
 
     private void deliverFcmToken() {
