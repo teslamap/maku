@@ -5435,12 +5435,26 @@ document
 
     }catch(error){
 
-      console.error(error);
+      console.error("Order submission failed:", error);
 
-      showToast(
-        "შეკვეთის გაგზავნა ვერ მოხერხდა. სცადე თავიდან.",
-        "error"
-      );
+      // Show a useful cause instead of hiding Firebase/network failures
+      // behind the same generic message. Keep the cart intact for retry.
+      const code = String(error?.code || "");
+      let message = "შეკვეთა ვერ გაიგზავნა. შეამოწმე ინტერნეტი და სცადე თავიდან.";
+
+      if(code.includes("auth/operation-not-allowed")){
+        message = "სტუმრის შეკვეთა მიუწვდომელია: Firebase-ში Anonymous sign-in ჩართული არ არის.";
+      }else if(code.includes("auth/network-request-failed")){
+        message = "Firebase-თან კავშირი ვერ დამყარდა. შეამოწმე ინტერნეტი.";
+      }else if(code.includes("permission-denied") || code.includes("firestore/permission-denied")){
+        message = "Firebase-მა შეკვეთა უარყო (წვდომის წესები). საჭიროა Firestore Rules-ის შემოწმება.";
+      }else if(code.includes("unauthenticated")){
+        message = "მომხმარებლის ავტორიზაცია ვერ დადასტურდა. განაახლე გვერდი და სცადე თავიდან.";
+      }else if(code.includes("unavailable") || code.includes("deadline-exceeded")){
+        message = "სერვისი დროებით მიუწვდომელია. შეკვეთა არ წაშლილა — სცადე მოგვიანებით.";
+      }
+
+      showToast(message,"error");
 
     }finally{
 
