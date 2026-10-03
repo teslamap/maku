@@ -2387,13 +2387,11 @@ adminPassword.addEventListener("keydown", e => {
   if (e.key === "Enter") loginAdmin();
 });
 
-async function registerMakasiaFcmToken(user) {
-  if (!user || user.uid !== ADMIN_UID || user.email !== ADMIN_EMAIL || !window.__makasiaFcmToken) return;
-  try {
-    await db.collection("users").doc(user.uid).set({ fcmTokens: firebase.firestore.FieldValue.arrayUnion(window.__makasiaFcmToken) }, { merge: true });
-  } catch (error) { console.warn("FCM token registration failed:", error); }
+function notifyMakasiaOrder(order) {
+  if (!order || !order.id || !window.MakasiaNative || !window.MakasiaNative.notifyOrder) return;
+  const customer = String(order.customerName || "მომხმარებელი").slice(0, 100);
+  window.MakasiaNative.notifyOrder("ახალი შეკვეთა", customer + " — ახალი შეკვეთა მიღებულია", String(order.id));
 }
-window.__setMakasiaFcmToken = token => { window.__makasiaFcmToken = token; if (auth.currentUser) registerMakasiaFcmToken(auth.currentUser); };
 
 auth.onAuthStateChanged(async user => {
   if (!user) {
@@ -2406,7 +2404,6 @@ auth.onAuthStateChanged(async user => {
     return;
   }
   loginError.textContent = "";
-  registerMakasiaFcmToken(user);
   enterAdmin();
 });
 
