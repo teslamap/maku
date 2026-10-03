@@ -58,26 +58,6 @@ public class MainActivity extends Activity {
                     + "})();",
                     null
                 );
-                // APK diagnostic console: visible on-screen and captures JS errors, taps and modal state.
-                view.evaluateJavascript(
-                    "(function(){"
-                    + "if(document.getElementById('__android_debug'))return;"
-                    + "var box=document.createElement('div');box.id='__android_debug';"
-                    + "box.style='position:fixed;left:8px;right:8px;top:70px;max-height:70vh;z-index:2147483647;background:rgba(15,15,20,.96);color:#fff;border:1px solid #555;border-radius:12px;font:12px monospace;display:none;overflow:auto;padding:10px;white-space:pre-wrap;box-shadow:0 8px 30px rgba(0,0,0,.5)';"
-                    + "var head=document.createElement('div');head.style='display:flex;gap:8px;align-items:center;margin-bottom:7px';"
-                    + "var title=document.createElement('b');title.textContent='🛠 APK DEBUG CONSOLE';head.appendChild(title);"
-                    + "var clear=document.createElement('button');clear.textContent='გასუფთავება';clear.style='margin-left:auto;padding:5px 8px';head.appendChild(clear);"
-                    + "box.appendChild(head);var logArea=document.createElement('div');box.appendChild(logArea);document.body.appendChild(box);"
-                    + "clear.onclick=function(){logArea.innerHTML=''};"
-                    + "var fab=document.createElement('button');fab.textContent='🐞';fab.style='position:fixed;right:12px;top:12px;z-index:2147483647;width:52px;height:52px;border:0;border-radius:50%;font-size:22px;background:#111;color:#fff;box-shadow:0 3px 15px rgba(0,0,0,.45)';"
-                    + "fab.onclick=function(){box.style.display=box.style.display==='none'?'block':'none'};document.body.appendChild(fab);"
-                    + "function log(x){var d=document.createElement('div');d.textContent=new Date().toLocaleTimeString()+'  '+x;logArea.prepend(d)};"
-                    + "window.onerror=function(msg,src,line,col,err){log('❌ ERROR: '+msg+' @ '+line+':'+col);if(err&&err.stack)log(err.stack);return false};"
-                    + "window.addEventListener('unhandledrejection',function(e){log('❌ PROMISE: '+(e.reason&&e.reason.stack||e.reason||'unknown'))});"
-                    + "document.addEventListener('click',function(e){var t=e.target;var el=t.closest?t.closest('button,a,[onclick],input,select,textarea'):t;if(el)log('👆 CLICK: '+(el.tagName||'')+' '+(el.id?'#'+el.id:'')+' '+((el.textContent||'').trim().slice(0,45)));setTimeout(function(){document.querySelectorAll('.modal-overlay').forEach(function(m){if(m.classList.contains('show')){var r=m.getBoundingClientRect();log('🪟 MODAL SHOW: #'+m.id+' display='+getComputedStyle(m).display+' vis='+getComputedStyle(m).visibility+' rect='+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height));}})},80)},true);"
-                    + "log('✅ Debug ready — tap 🐞 and reproduce the problem.');"
-                    + "})();", null
-                );
                 // Force modal overlays into a top-level WebView layer after every page load.
                 view.evaluateJavascript(
                     "(function(){"
