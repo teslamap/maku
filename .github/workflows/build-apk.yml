@@ -1,16 +1,6 @@
 name: Build Makasia Apps
 
 on:
-  push:
-    paths:
-      - 'mobile-admin.html'
-      - 'mobile-index.html'
-      - 'management-mobile.html'
-      - 'app/**'
-      - '*.gradle'
-      - 'settings.gradle'
-      - 'gradle.properties'
-      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
