@@ -2474,6 +2474,7 @@ let reviews = [];
 
 let unsubscribeProducts = null;
 let unsubscribeOrders = null;
+let ordersListenerReady = false;
 let unsubscribeUsers = null;
 let unsubscribeReviews = null;
 
@@ -3494,6 +3495,7 @@ function loadOrders() {
     unsubscribeOrders();
   }
 
+  ordersListenerReady = false;
   unsubscribeOrders =
     db
       .collection("orders")
@@ -3504,6 +3506,12 @@ function loadOrders() {
       .onSnapshot(
         snapshot => {
 
+          if (ordersListenerReady) {
+            snapshot.docChanges().forEach(change => {
+              if (change.type === "added") notifyMakasiaOrder({ id: change.doc.id, ...change.doc.data() });
+            });
+          }
+          ordersListenerReady = true;
           orders = [];
 
           snapshot.forEach(doc => {
@@ -3542,6 +3550,12 @@ function loadOrders() {
               .onSnapshot(
                 snapshot => {
 
+                  if (ordersListenerReady) {
+                    snapshot.docChanges().forEach(change => {
+                      if (change.type === "added") notifyMakasiaOrder({ id: change.doc.id, ...change.doc.data() });
+                    });
+                  }
+                  ordersListenerReady = true;
                   orders = [];
 
                   snapshot.forEach(doc => {
