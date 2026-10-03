@@ -1,6 +1,8 @@
 package com.makasia.app;
 
 import android.app.Activity;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,15 +17,21 @@ import android.view.View;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
+import com.google.firebase.messaging.FirebaseMessaging;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private ValueCallback<Uri[]> filePathCallback;
     private WebView webView;
     private SwipeRefreshLayout swipeRefresh;
+    private String fcmToken;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] { Manifest.permission.POST_NOTIFICATIONS }, 2001);
+        }
         swipeRefresh = new SwipeRefreshLayout(this);
         webView = new WebView(this);
         swipeRefresh.addView(webView);
@@ -38,6 +46,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 swipeRefresh.setRefreshing(false);
+                deliverFcmToken();
                 // Android WebView can paint CSS fixed/animated modal sheets behind
                 // their own backdrop on some WebView versions. Normalize modal
                 // compositing only inside the native app; browser HTML stays unchanged.
@@ -151,7 +160,18 @@ public class MainActivity extends Activity {
         }
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl(pageUrl);
+        FirebaseMessaging.getInstance().getToken()
+            .addOnSuccessListener(token -> { fcmToken = token; deliverFcmToken(); })
+            .addOnFailureListener(error -> Log.w("MakasiaFCM", "Unable to retrieve FCM token", error));
         setContentView(swipeRefresh);
+    }
+
+    private void deliverFcmToken() {
+        if (webView == null || fcmToken == null || fcmToken.isEmpty()) return;
+        String js = "window.__setMakasiaFcmToken && window.__setMakasiaFcmToken(" + JSONObject.quote(fcmToken) + ");";
+        runOnUiThread(() -> {
+            if (webView != null) webView.evaluateJavascript(js, null);
+        });
     }
 
     @Override
