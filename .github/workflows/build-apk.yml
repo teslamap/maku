@@ -1,11 +1,11 @@
-name: Build Makasia Apps
+name: Build Makasia Admin V2 APK
 
 on:
   push:
+    branches:
+      - rebuild/admin-v2-foundation
     paths:
-      - 'mobile-admin.html'
-      - 'mobile-index.html'
-      - 'management-mobile.html'
+      - 'admin-v2.html'
       - 'app/**'
       - '*.gradle'
       - 'settings.gradle'
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-admin:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,48 +28,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
-      - name: Prepare assets
+      - name: Prepare Admin V2 asset
         run: |
           mkdir -p app/src/main/assets
-          cp mobile-admin.html app/src/main/assets/mobile-admin.html
-          cp mobile-index.html app/src/main/assets/mobile-index.html
-          cp management-mobile.html app/src/main/assets/management-mobile.html
-      - name: Prepare labels
+          cp admin-v2.html app/src/main/assets/admin-v2.html
+      - name: Set Admin label
         run: |
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/app_labels.xml <<'EOF'
-          <resources>
-              <string name="appLabel">Makasia</string>
-          </resources>
-          EOF
-          mkdir -p app/src/admin/res/values app/src/manager/res/values app/src/store/res/values
+          mkdir -p app/src/admin/res/values
           cat > app/src/admin/res/values/app_labels.xml <<'EOF'
           <resources><string name="appLabel">Makasia Admin</string></resources>
           EOF
-          cat > app/src/manager/res/values/app_labels.xml <<'EOF'
-          <resources><string name="appLabel">Makasia Manager</string></resources>
-          EOF
-          cat > app/src/store/res/values/app_labels.xml <<'EOF'
-          <resources><string name="appLabel">Makasia</string></resources>
-          EOF
       - name: Build Admin APK
         run: gradle --no-daemon :app:assembleAdminDebug
-      - name: Build Manager APK
-        run: gradle --no-daemon :app:assembleManagerDebug
-      - name: Build Makasia APK
-        run: gradle --no-daemon :app:assembleStoreDebug
       - name: Upload Admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: Makasia-Admin
+          name: Makasia-Admin-V2
           path: app/build/outputs/apk/admin/debug/app-admin-debug.apk
-      - name: Upload Manager APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Makasia-Manager-Mobile
-          path: app/build/outputs/apk/manager/debug/app-manager-debug.apk
-      - name: Upload Makasia APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Makasia
-          path: app/build/outputs/apk/store/debug/app-store-debug.apk
