@@ -3,6 +3,10 @@ package com.makasia.app;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import android.webkit.JavascriptInterface;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.Intent;
@@ -19,15 +23,12 @@ import android.view.View;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
-import com.google.firebase.messaging.FirebaseMessaging;
-import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private ValueCallback<Uri[]> filePathCallback;
     private WebView webView;
     private SwipeRefreshLayout swipeRefresh;
-    private String fcmToken;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +38,7 @@ public class MainActivity extends Activity {
         }
         swipeRefresh = new SwipeRefreshLayout(this);
         webView = new WebView(this);
+        webView.addJavascriptInterface(new MakasiaNativeBridge(), "MakasiaNative");
         swipeRefresh.addView(webView);
         // Admin uses standalone WebView rendering for reliable modal compositing.
         // SwipeRefreshLayout can create a separate/clipped drawing layer around fixed popups.
@@ -49,7 +51,6 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 swipeRefresh.setRefreshing(false);
-                deliverFcmToken();
                 // Android WebView can paint CSS fixed/animated modal sheets behind
                 // their own backdrop on some WebView versions. Normalize modal
                 // compositing only inside the native app; browser HTML stays unchanged.
@@ -163,9 +164,6 @@ public class MainActivity extends Activity {
         }
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl(pageUrl);
-        FirebaseMessaging.getInstance().getToken()
-            .addOnSuccessListener(token -> { fcmToken = token; deliverFcmToken(); })
-            .addOnFailureListener(error -> Log.w("MakasiaFCM", "Unable to retrieve FCM token", error));
         setContentView(swipeRefresh);
     }
 
@@ -179,12 +177,41 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void deliverFcmToken() {
-        if (webView == null || fcmToken == null || fcmToken.isEmpty()) return;
-        String js = "window.__setMakasiaFcmToken && window.__setMakasiaFcmToken(" + JSONObject.quote(fcmToken) + ");";
-        runOnUiThread(() -> {
-            if (webView != null) webView.evaluateJavascript(js, null);
-        });
+    private final class MakasiaNativeBridge {
+        @JavascriptInterface
+        public void notifyOrder(String title, String body, String orderId) {
+            runOnUiThread(() -> showLocalOrderNotification(title, body, orderId));
+        }
+    }
+
+    private void showLocalOrderNotification(String title, String body, String orderId) {
+        if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Log.w("MakasiaNotify", "Notification permission not granted");
+            return;
+        }
+        String safeBody = body == null ? "მიღებულია ახალი შეკვეთა" : body;
+        Intent launch = new Intent(this, MainActivity.class);
+        launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        if (orderId != null) launch.putExtra("orderId", orderId);
+        int requestCode = orderId == null ? 1002 : orderId.hashCode();
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, requestCode, launch,
+                PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "makasia_orders")
+                .setSmallIcon(getApplicationInfo().icon)
+                .setContentTitle(title == null ? "ახალი შეკვეთა" : title)
+                .setContentText(safeBody)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(safeBody))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+        try {
+            NotificationManagerCompat.from(this).notify(requestCode, notification.build());
+        } catch (SecurityException error) {
+            Log.w("MakasiaNotify", "Unable to show notification", error);
+        }
     }
 
     @Override
