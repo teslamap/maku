@@ -27,9 +27,14 @@ public class MainActivity extends Activity {
         swipeRefresh = new SwipeRefreshLayout(this);
         webView = new WebView(this);
         swipeRefresh.addView(webView);
-        // Admin uses standalone WebView rendering for reliable modal compositing.
-        // SwipeRefreshLayout can create a separate/clipped drawing layer around fixed popups.
-        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        // Keep hardware acceleration for Manager and Store to avoid software-rendering
+        // overhead on animated, image-heavy mobile pages. Admin retains software rendering
+        // for its existing modal-compositing workaround.
+        if ("com.makasia.admin".equals(getPackageName())) {
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        } else {
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
         swipeRefresh.setOnChildScrollUpCallback((parent, child) -> webView != null && webView.canScrollVertically(-1));
         swipeRefresh.setOnRefreshListener(() -> {
             if (webView != null) webView.reload();
