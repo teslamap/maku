@@ -32,9 +32,9 @@ public class MakasiaMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(message);
         Map<String, String> data = message.getData();
         String title = message.getNotification() != null && message.getNotification().getTitle() != null
-                ? message.getNotification().getTitle() : data.getOrDefault("title", "ახალი შეკვეთა");
+                ? message.getNotification().getTitle() : (data.containsKey("title") ? data.get("title") : "ახალი შეკვეთა");
         String body = message.getNotification() != null && message.getNotification().getBody() != null
-                ? message.getNotification().getBody() : data.getOrDefault("body", "მიღებულია ახალი შეკვეთა");
+                ? message.getNotification().getBody() : (data.containsKey("body") ? data.get("body") : "მიღებულია ახალი შეკვეთა");
         showNotification(title, body, data.get("orderId"));
     }
 
