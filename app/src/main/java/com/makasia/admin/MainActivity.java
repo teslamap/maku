@@ -147,7 +147,7 @@ public class MainActivity extends Activity {
         } else if (pkg.equals("com.makasia.manager")) {
             pageUrl = "https://teslamap.github.io/maku/management-mobile.html";
         } else {
-            pageUrl = "https://teslamap.github.io/maku/mobile-admin.html?v=modalfix2";
+            pageUrl = "file:///android_asset/admin-v2.html";
         }
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl(pageUrl);
