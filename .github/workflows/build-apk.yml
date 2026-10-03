@@ -1,4 +1,4 @@
-name: Build Makasia Admin
+name: Build Makasia Apps
 
 on:
   push:
@@ -52,10 +52,20 @@ jobs:
           cat > app/src/store/res/values/app_labels.xml <<'EOF'
           <resources><string name="appLabel">Makasia</string></resources>
           EOF
-      - name: Build Admin APK
-        run: gradle --no-daemon :app:assembleAdminDebug
+      - name: Build all APKs
+        run: gradle --no-daemon :app:assembleAdminDebug :app:assembleManagerDebug :app:assembleStoreDebug
       - name: Upload Admin APK
         uses: actions/upload-artifact@v4
         with:
           name: Makasia-Admin
           path: app/build/outputs/apk/admin/debug/app-admin-debug.apk
+      - name: Upload Manager APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makasia-Manager
+          path: app/build/outputs/apk/manager/debug/app-manager-debug.apk
+      - name: Upload Makasia APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makasia-Store
+          path: app/build/outputs/apk/store/debug/app-store-debug.apk
