@@ -1358,8 +1358,10 @@ html.dark .newsletter{
   inset:0;
   z-index:3000;
 
-  background:rgba(30,15,22,.35);
-  backdrop-filter:blur(5px);
+  background:rgba(30,15,22,.48);
+  /* Avoid Android WebView backdrop-filter artifacts over fixed drawers. */
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
 
   opacity:0;
   visibility:hidden;
@@ -1577,8 +1579,10 @@ html.dark .newsletter{
 
   padding:20px;
 
-  background:rgba(30,15,22,.38);
-  backdrop-filter:blur(8px);
+  background:rgba(30,15,22,.48);
+  /* Keep modal content crisp in Android WebView hardware rendering. */
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
 
   opacity:0;
   visibility:hidden;
