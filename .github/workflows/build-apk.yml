@@ -1,6 +1,9 @@
 name: Build Makasia Apps
 
 on:
+  push:
+    branches:
+      - feature/fcm-notifications
   workflow_dispatch:
 
 jobs:
