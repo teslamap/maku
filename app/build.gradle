@@ -4,6 +4,10 @@ android {
     namespace 'com.makasia.store'
     compileSdk 35
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId 'com.makasia.store'
         minSdk 23
