@@ -1,0 +1,6 @@
+name = "makasia-ai"
+main = "worker.js"
+compatibility_date = "2026-10-05"
+
+[ai]
+binding = "AI"
