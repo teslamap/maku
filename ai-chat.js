@@ -187,7 +187,7 @@
       .then(function (result) {
         if (loading) loading.remove();
         addMessage("ai", result.text, result.items);
-        history.push({ role: "user", content: question });\n        history.push({ role: "user", content: question });\n        history.push({ role: "assistant", content: result.text });
+        history.push({ role: "assistant", content: result.text });
       })
       .catch(function (error) {
         console.warn("Makasia AI:", error);
