@@ -125,6 +125,8 @@
     };
   }
 
+
+  function smartLocal(question) {\n    var ps = getProducts().filter(function(p){ return p.stock > 0; });\n    var q = question.toLowerCase();\n    var nums = q.match(/\\d+(?:[.,]\\d+)?/g) || [];\n    var budget = nums.length ? Math.max.apply(null, nums.map(function(x){ return Number(x.replace(",", ".")); })) : null;\n    var sale = /(აქცი|ფასდაკლებ|sale|discount|აქცია)/.test(q);\n    var cheap = /(ყველაზე იაფ|იაფი|ბიუჯეტური)/.test(q);\n    var expensive = /(ყველაზე ძვირ|პრემიუმ|ძვირი)/.test(q);\n    var candidates = ps.slice();\n    if (budget !== null && /(ლარ|₾|მდე|ბიუჯეტ|ფას)/.test(q)) candidates = candidates.filter(function(p){return p.price <= budget;});\n    if (sale) candidates = candidates.filter(function(p){return p.oldPrice > p.price || p.discount > 0;});\n    if (cheap) candidates.sort(function(a,b){return a.price-b.price;});\n    if (expensive) candidates.sort(function(a,b){return b.price-a.price;});\n    return candidates.slice(0,5);\n  }\n
   function ask(question, history) {
     var ps = getProducts();
 
@@ -185,7 +187,7 @@
       .then(function (result) {
         if (loading) loading.remove();
         addMessage("ai", result.text, result.items);
-        history.push({ role: "assistant", content: result.text });
+        history.push({ role: "user", content: question });\n        history.push({ role: "user", content: question });\n        history.push({ role: "assistant", content: result.text });
       })
       .catch(function (error) {
         console.warn("Makasia AI:", error);
