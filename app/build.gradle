@@ -1,0 +1,28 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.makasia.store'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.makasia.store'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    flavorDimensions 'source'
+    productFlavors {
+        webview {
+            dimension 'source'
+            applicationId 'com.makasia.store.webview'
+            versionName '1.0-webview'
+        }
+        embedded {
+            dimension 'source'
+            applicationId 'com.makasia.store.embedded'
+            versionName '1.0-embedded'
+        }
+    }
+}
