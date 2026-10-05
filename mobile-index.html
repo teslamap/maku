@@ -80,6 +80,11 @@ html{
   scroll-behavior:smooth;
 }
 
+html,body{
+  width:100%;
+  min-height:100%;
+}
+
 body{
   font-family:Inter,Arial,sans-serif;
   background:
@@ -89,6 +94,8 @@ body{
   color:var(--text);
   min-height:100vh;
   overflow-x:hidden;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   transition:background .35s,color .35s;
 }
 
@@ -6226,15 +6233,22 @@ async function init(){
 
   loadTheme();
 
-  // Keep the guest identity aligned with Firebase Auth and Firestore rules.
+  // Never let a slow WebView/Firebase request block the whole storefront.
+  const withTimeout = (promise, ms) => Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(() => resolve(null), ms))
+  ]);
+
   try{
-    if(!auth.currentUser){
-      await auth.signInAnonymously();
-    }
-    if(auth.currentUser){
-      guestId = auth.currentUser.uid;
-      localStorage.setItem("makasia_guest_id", guestId);
-    }
+    await withTimeout((async () => {
+      if(!auth.currentUser){
+        await auth.signInAnonymously();
+      }
+      if(auth.currentUser){
+        guestId = auth.currentUser.uid;
+        localStorage.setItem("makasia_guest_id", guestId);
+      }
+    })(), 3500);
   }catch(authError){
     console.error("Guest authentication failed:", authError);
   }
@@ -6248,11 +6262,15 @@ async function init(){
     1000
   );
 
-  await Promise.all([
-    loadProducts(),
-    loadReviews(),
-    loadPromos()
+  await Promise.allSettled([
+    withTimeout(loadProducts(), 6000),
+    withTimeout(loadReviews(), 6000),
+    withTimeout(loadPromos(), 6000)
   ]);
+
+  // Firebase must never leave the full-page loader over the app.
+  const loader = document.getElementById("pageLoader");
+  if(loader) loader.classList.add("hide");
 
   renderProducts();
   renderWishlist();
@@ -6274,6 +6292,6 @@ init();
 
 </script>
 
-<script src="/maku/ai-chat.js?v=20261005ai4"></script>
+<script src="ai-chat.js?v=20261005ai4"></script>
 </body>
 </html>
