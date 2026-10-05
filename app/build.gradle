@@ -29,4 +29,7 @@ android {
             versionName '1.0-embedded'
         }
     }
+    dependencies {
+        implementation 'androidx.webkit:webkit:1.12.1'
+    }
 }
