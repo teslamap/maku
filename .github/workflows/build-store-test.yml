@@ -30,6 +30,7 @@ jobs:
         run: |
           mkdir -p app/src/embedded/assets
           cp mobile-index.html app/src/embedded/assets/mobile-index.html
+          cp ai-chat.js app/src/embedded/assets/ai-chat.js
 
       - name: Build WebView and Embedded
         run: gradle --no-daemon :app:assembleWebviewDebug :app:assembleEmbeddedDebug
