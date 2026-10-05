@@ -1,0 +1,11 @@
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#E879A1</item>
+        <item name="android:navigationBarColor">#FFF8FB</item>
+        <item name="android:statusBarColor">#FFF8FB</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <string name="appLabel">Makasia Store</string>
+</resources>
