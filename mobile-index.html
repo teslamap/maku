@@ -1197,8 +1197,7 @@ html.dark .product-image{
   gap:18px;
 }
 
-.feature{  padding:28px;
-  border-radius:24px;
+.feature{  padding:28px;  border-radius:24px;
 
   background:var(--surface-solid);
   border:1px solid var(--border);
@@ -2397,7 +2396,6 @@ textarea.form-control{
   .modal{
     border-radius:24px;
     max-height:94vh;  }
-
   .modal-content{
     padding:15px 18px 25px;
   }
@@ -2490,7 +2488,7 @@ textarea.form-control{
     min-height:100%!important;
     height:auto!important;
     max-height:none!important;
-    overflow-x:hidden!important;
+    overflow-x:clip!important;
     overflow-y:visible!important;
     scroll-behavior:auto!important;
   }
@@ -2500,7 +2498,7 @@ textarea.form-control{
     min-height:100vh!important;
     height:auto!important;
     max-height:none!important;
-    overflow-x:hidden!important;
+    overflow-x:clip!important;
     overflow-y:visible!important;
     position:static!important;
     touch-action:auto!important;
@@ -2523,7 +2521,7 @@ textarea.form-control{
    Dedicated mobile layout; desktop file remains untouched.
 ========================================================= */
 :root{--header-h:64px}
-html,body{width:100%;max-width:100%;overflow-x:hidden}
+html,body{width:100%;max-width:100%;overflow-x:clip}
 body{padding-bottom:78px}
 .header{height:64px}
 .header-inner{width:100%;padding:0 12px;gap:8px}
@@ -3597,8 +3595,7 @@ function loadJSON(key, fallback){
   }}
 
 function saveState(){
-  localStorage.setItem("makasia_cart", JSON.stringify(cart));
-  localStorage.setItem("makasia_wishlist", JSON.stringify(wishlist));
+  localStorage.setItem("makasia_cart", JSON.stringify(cart));  localStorage.setItem("makasia_wishlist", JSON.stringify(wishlist));
 }
 
 function createGuestId(){
@@ -4797,7 +4794,6 @@ async function openProduct(productId){
       </div>
 
       <div class="detail-info">
-
         <div class="detail-category">
           ${escapeHTML(p.category || "MAKASIA")}
         </div>
@@ -5997,8 +5993,7 @@ function showSaleProducts(){
 
   const saleProducts =
     products.filter(p =>
-      getDiscount(p) > 0
-    );
+      getDiscount(p) > 0    );
 
   if(!saleProducts.length){
 
