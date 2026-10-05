@@ -1,0 +1,47 @@
+name: Build Makasia Store Test APKs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'mobile-index.html'
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/build-store-test.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
+
+      - name: Prepare embedded HTML
+        run: |
+          mkdir -p app/src/embedded/assets
+          cp mobile-index.html app/src/embedded/assets/mobile-index.html
+
+      - name: Build WebView and Embedded
+        run: gradle --no-daemon :app:assembleWebviewDebug :app:assembleEmbeddedDebug
+
+      - name: Upload WebView APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makasia-Store-WebView
+          path: app/build/outputs/apk/webview/debug/app-webview-debug.apk
+
+      - name: Upload Embedded APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makasia-Store-Embedded
+          path: app/build/outputs/apk/embedded/debug/app-embedded-debug.apk
